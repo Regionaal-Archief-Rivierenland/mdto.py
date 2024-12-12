@@ -10,7 +10,12 @@ def test_informatieobject_xml_validity(mdto_xsd):
     # create a schema object from the MDTO XSD
     with open(mdto_xsd, 'rb') as f:
         mdto_xsd_str = f.read()
-    
+
+    with open(mdto_xsd, "r", encoding="utf-8") as f:
+        xsd_content = f.read()
+
+    print(xsd_content.encode("utf-8"))  # Ensure all characters can be re-encoded to UTF-8
+        
     utf8 = b'<?xml version="1.0" encoding="UTF-8"?>\n'+mdto_xsd_str
     mdto_schema = ET.XMLSchema(ET.fromstring(utf8))
     # create informatieobject
