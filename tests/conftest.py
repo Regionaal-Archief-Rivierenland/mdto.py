@@ -33,8 +33,8 @@ def download_mdto_xsd(target_dir):
     response = requests.get(xsd_url)
     response.raise_for_status()  # raise error if download failed
 
-    with open(target_dir / xsd_filename, "w") as f:
-        f.write(response.text)
+    with open(target_dir / xsd_filename, "wb") as f:
+        f.write(response.content)
 
 
 @pytest.fixture
