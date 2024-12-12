@@ -12,6 +12,8 @@ on:
 jobs:
   test:
     runs-on: ${{ matrix.os }}
+    env:
+      PYTHONIOENCODING: "utf-8"
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest] # ubuntu is the only distro available 🙃
@@ -20,7 +22,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 1
 
       - name: Set up Python
         uses: actions/setup-python@v5
