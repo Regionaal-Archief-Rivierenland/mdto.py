@@ -8,6 +8,11 @@ from mdto.gegevensgroepen import *
 def test_informatieobject_xml_validity(mdto_xsd):
     """Test if running to_xml() on a informatieobject procudes valid MDTO XML"""
     # create a schema object from the MDTO XSD
+    with open(mdto_xsd, 'rb') as f:
+        mdto_xsd_str = f.read()
+    
+    ET.fromstring(b'<?xml version="1.0" encoding="UTF-8"?>\n'+mdto_xsd_str)
+    
     mdto_schema = ET.XMLSchema(ET.parse(mdto_xsd))
     # create informatieobject
     informatieobject = Informatieobject(
