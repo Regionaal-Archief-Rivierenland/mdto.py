@@ -11,8 +11,8 @@ def test_informatieobject_xml_validity(mdto_xsd):
     with open(mdto_xsd, 'rb') as f:
         mdto_xsd_str = f.read()
     
-    
-    mdto_schema = ET.XMLSchema(ET.fromstring(b'<?xml version="1.0" encoding="UTF-8"?>\n'+mdto_xsd_str))
+    utf8 = b'<?xml version="1.0" encoding="UTF-8"?>\n'+mdto_xsd_str
+    mdto_schema = ET.XMLSchema(ET.fromstring(utf8.encode("utf-8")))
     # create informatieobject
     informatieobject = Informatieobject(
         naam="Verlenen kapvergunning",
