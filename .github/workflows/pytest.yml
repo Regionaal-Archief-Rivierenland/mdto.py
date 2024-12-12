@@ -5,13 +5,16 @@ on:
   push:
     branches:
       - main
+      - windows_ci
   pull_request:
     branches:
       - main
-
 jobs:
   test:
-    runs-on: ubuntu-latest  # this is the only distro available 🙃
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest] # ubuntu is the only distro available 🙃
 
     steps:
       - name: Checkout
