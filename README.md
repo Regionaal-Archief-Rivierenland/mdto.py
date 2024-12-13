@@ -150,7 +150,7 @@ Informatieobject(naam='Verlenen kapvergunning Hooigracht 21 Den Haag',  identifi
 > obj_verwijzing = VerwijzingGegevens("Verlenen kapvergunning Hooigracht")
 >
 > bestand = mdto.bestand_from_file(
->        file="vergunning.pdf",  # bestand waarvoor technische metagegevens moeten worden aangemaakt
+>         file="vergunning.pdf",  # bestand waarvoor technische metagegevens moeten worden aangemaakt
 >         identificatie=Identificatiegegevens("34c5-4379-9f1a-5c378", "Proza (DMS)"),
 >         isrepresentatievan=obj_verwijzing
 >      )
@@ -158,7 +158,7 @@ Informatieobject(naam='Verlenen kapvergunning Hooigracht 21 Den Haag',  identifi
 > # Sla op als XML bestand
 > bestand.save("vergunning.bestand.mdto.xml")
 > ```
-> 
+>
 > Het resulterende XML bestand bevat vervolgens de correcte `<omvang>`, `<bestandsformaat>`, `<checksum>` , en `<isRepresentatieVan>` tags. `<URLBestand>` tags kunnen ook worden aangemaakt worden via de optionele `url=` parameter van `bestand_from_file()`.
 
 ## XML bestanden inlezen
