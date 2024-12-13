@@ -158,8 +158,8 @@ Informatieobject(naam='Verlenen kapvergunning Hooigracht 21 Den Haag',  identifi
 > # Sla op als XML bestand
 > bestand.save("vergunning.bestand.mdto.xml")
 > ```
-
-Het resulterende XML bestand bevat vervolgens de correcte `<omvang>`, `<bestandsformaat>`, `<checksum>` , en `<isRepresentatieVan>` tags. `<URLBestand>` tags kunnen ook worden aangemaakt worden via de optionele `url=` parameter van `bestand_from_file()`. URLs worden automatisch gevalideerd via de [validators python library](https://pypi.org/project/validators/).
+> 
+> Het resulterende XML bestand bevat vervolgens de correcte `<omvang>`, `<bestandsformaat>`, `<checksum>` , en `<isRepresentatieVan>` tags. `<URLBestand>` tags kunnen ook worden aangemaakt worden via de optionele `url=` parameter van `bestand_from_file()`.
 
 ## XML bestanden inlezen
 
