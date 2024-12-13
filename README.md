@@ -139,7 +139,7 @@ Informatieobject(naam='Verlenen kapvergunning Hooigracht 21 Den Haag',  identifi
 'VERLENEN KAPVERGUNNING HOOIGRACHT 21 DEN HAAG'
 ```
 
-> > [!TIP]
+> [!TIP]
 > Je kan op een vergelijkbare manier Bestand objecten bouwen via de `Bestand()` class. Het is vaak echter simpeler om hiervoor de _convience_ functie `bestand_from_file()` te gebruiken, omdat deze veel gegevens, zoals PRONOM informatie en checksums, automatisch voor je aanmaakt:
 >
 > ```python
