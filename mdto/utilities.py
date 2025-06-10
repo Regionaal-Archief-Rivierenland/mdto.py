@@ -12,7 +12,11 @@ import lxml.etree as ET
 
 from mdto.gegevensgroepen import *
 
-from . import helpers
+# allow running directly from interpreter
+try:
+    from . import helpers
+except ImportError:
+    import helpers
 
 
 def _pronominfo_fido(file: str | Path) -> BegripGegevens:
