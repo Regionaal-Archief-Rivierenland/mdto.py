@@ -151,7 +151,7 @@ Informatieobject(naam='Verlenen kapvergunning Hooigracht 21 Den Haag',  identifi
 
 ## XML bestanden inlezen
 
-`mdto.py` kan ook MDTO bestanden inlezen en naar Python MDTO objecten omzetten via de `from_xml` functie.
+`mdto.py` kan ook MDTO bestanden inlezen en naar Python MDTO objecten omzetten via `from_xml()`.
 
 Stel bijvoorbeeld dat je alle checksums van Bestand XML bestanden wilt updaten:
 
