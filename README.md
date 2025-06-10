@@ -51,13 +51,6 @@ Naast gebruiksvriendelijkheid, streeft `mdto.py` ook een 100% correcte implement
 
 
 * Python 3.11 of nieuwer.
-* De PRONOM detectie functionaliteit werkt alleen als het programma [`fido`](https://github.com/openpreserve/fido) in je `PATH` staat. Als je de instructies hieronder volgt gebeurd dit automatisch.
-
-
-> [!TIP]
-> `mdto.py` kan ook PRONOM-informatie genereren via `sf` ([siegfried](https://github.com/richardlehane/siegfried)). `sf` is sneller en meer up-to-date dan `fido`, maar op dit moment lastiger te installeren. Als `sf` geïnstalleerd is, gebruikt `mdto.py` dit programma automatisch voor PRONOM-informatie.
-> 
-> Als beide programma's aanwezig zijn, kun je je voorkeur aangeven door de environment variable `PRONOM_BACKEND` aan te passen naar `sf`/`fido`.
 
 ## Systeem-brede installatie
 
