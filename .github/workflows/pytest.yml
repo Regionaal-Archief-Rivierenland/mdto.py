@@ -27,14 +27,9 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Set up go # for testing + installing siegfried-based PRONOM detection
-        uses: actions/setup-go@v5
-
       - name: Install mdto.py and test dependencies
         run: |
-          go install github.com/richardlehane/siegfried/cmd/sf@latest
-          sf -update
-          pip install pytest # pytest ≠ project dep, so add it here
+          pip install pytest requests # pytest + requests ≠ project deps, so add them here
           pip install .
 
       - name: Run tests
