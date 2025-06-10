@@ -43,12 +43,11 @@
 </MDTO>
 ```
 
-Naast gebruiksvriendelijkheid, streeft `mdto.py` ook een 100% correcte implementatie van het MDTO XML-schema te zijn. Deze correctheid wordt geverifieerd door de output van `mdto.py` met de XSD en de MDTO voorbeeldbestanden te vergelijken (zie [unit tests](tests/)).
+Naast gebruiksvriendelijkheid, streeft `mdto.py` ook een 100% correcte implementatie van het MDTO XML-schema te zijn. Deze correctheid wordt geverifieerd door de output van `mdto.py` met de MDTO XSD en voorbeeldbestanden te vergelijken (zie [tests/](tests/)).
 
 # 💿 Installatie
 
 ## Afhankelijkheden
-
 
 * Python 3.11 of nieuwer
 
