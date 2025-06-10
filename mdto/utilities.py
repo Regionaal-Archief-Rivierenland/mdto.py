@@ -9,12 +9,13 @@ from pathlib import Path
 from typing import List, TextIO
 
 import lxml.etree as ET
+import pygfried
 
 from mdto.gegevensgroepen import *
 
 from . import helpers
 
-
+# TODO: delete?
 def _pronominfo_fido(file: str | Path) -> BegripGegevens:
     # Note: fido currently lacks a public API
     # Hence, the most robust solution is to invoke fido as a cli program
@@ -62,10 +63,8 @@ def _pronominfo_fido(file: str | Path) -> BegripGegevens:
 
 
 def _pronominfo_siegfried(file: str | Path) -> BegripGegevens:
-    import pygfried
-
     # we only care about the first file
-    prinfo = pygfried.identify(str(file), detailed=True)['files'][0]
+    prinfo = pygfried.identify(str(file), detailed=True)["files"][0]
 
     if "empty" in prinfo["errors"]:
         helpers.logging.warning(f"{file} appears to be an empty file")
@@ -85,7 +84,7 @@ def _pronominfo_siegfried(file: str | Path) -> BegripGegevens:
             f"siegfried failed to detect PRONOM information about {file}"
         )
 
-    # log sf's warnings (such as extension mismatches)
+    # log siegfried's warnings (such as extension mismatches)
     warning = match["warning"]
     if warning:
         helpers.logging.warning(
