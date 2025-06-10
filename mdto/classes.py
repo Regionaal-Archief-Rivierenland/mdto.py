@@ -53,6 +53,7 @@ class Serializable:
             if optional_field and not field_value:
                 continue
 
+            # We're actually a little stricter than MDTO on this point
             if not optional_field and not field_value:
                 raise _ValidationError("mandatory field cannot be empty or None")
 
