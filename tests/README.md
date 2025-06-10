@@ -7,7 +7,7 @@ Deze tests valideren de werking van deze library door naar drie dingen te kijken
 
 # Test afhankelijkheden
 
-[`pytest`](https://pypi.org/project/pytest/) en de afhankelijkheden van `mdto.py` zijn genoeg om alle tests uit te voeren. Aangezien de tests de MDTO voorbeeldbestanden en XSD moeten kunnen downloaden, heb je een werkende internetverbinding nodig.
+[`pytest`](https://pypi.org/project/pytest/), [`requests`](https://pypi.org/project/requests/) en de afhankelijkheden van `mdto.py` zijn genoeg om alle tests uit te voeren. Aangezien de tests de MDTO voorbeeldbestanden en XSD moeten kunnen downloaden, heb je een werkende internetverbinding nodig.
 
 # Het uitvoeren van de tests
 
