@@ -50,7 +50,7 @@ Naast gebruiksvriendelijkheid, streeft `mdto.py` ook een 100% correcte implement
 ## Afhankelijkheden
 
 
-* Python 3.11 of nieuwer.
+* Python 3.11 of nieuwer
 
 ## Systeem-brede installatie
 
