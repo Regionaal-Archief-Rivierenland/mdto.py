@@ -15,52 +15,6 @@ from mdto.gegevensgroepen import *
 
 from . import helpers
 
-# TODO: delete?
-def _pronominfo_fido(file: str | Path) -> BegripGegevens:
-    # Note: fido currently lacks a public API
-    # Hence, the most robust solution is to invoke fido as a cli program
-    # Upstream issue: https://github.com/openpreserve/fido/issues/94
-    # FIXME: log more warnings from fido?
-    cmd = [
-        "fido",
-        "-q",
-        "-matchprintf",
-        "OK,%(info.formatname)s,%(info.puid)s,\n",
-        "-nomatchprintf",
-        "FAIL",
-        file,
-    ]
-
-    result = subprocess.run(
-        cmd, capture_output=True, shell=False, text=True, check=True
-    )
-
-    stdout, stderr = result.stdout, result.stderr
-
-    # fido prints warnings about empty files to stderr
-    if "(empty)" in stderr.lower():
-        helpers.logging.warning(f"{file} appears to be an empty file")
-
-    # found a match!
-    if stdout.startswith("OK"):
-        matches = stdout.rstrip().split("\n")
-        if len(matches) > 1:
-            helpers.logging.warning(
-                "fido returned more than one PRONOM match "
-                f"for {file}. Selecting the first one."
-            )
-
-        # strip "OK" from the output
-        matches = matches[0].split(",")[1:]
-        verwijzing = VerwijzingGegevens(verwijzingNaam="PRONOM-register")
-        return BegripGegevens(
-            begripLabel=matches[0],
-            begripCode=matches[1],
-            begripBegrippenlijst=verwijzing,
-        )
-    else:
-        raise RuntimeError(f"fido PRONOM detection failed on {file}")
-
 
 def _pronominfo_siegfried(file: str | Path) -> BegripGegevens:
     # we only care about the first file
@@ -102,12 +56,6 @@ def pronominfo(file: str | Path) -> BegripGegevens:
     """Generate PRONOM information about `file`. This information can be used in
     a Bestand's `<bestandsformaat>` tag.
 
-    mdto.py supports two backends for PRONOM detection: fido and sf
-    (siegfried). The default backend is sf; unless sf is not found, in which
-    case fido is used as an automatic fallback. Set the environment variable
-    `PRONOM_BACKEND` to fido/siegfried to manually select a backend
-    (e.g. `PRONOM_BACKEND=fido your_script.py ...`).
-
     Args:
         file (str | Path): Path to the file to inspect
 
@@ -121,49 +69,7 @@ def pronominfo(file: str | Path) -> BegripGegevens:
     if not os.path.isfile(file):
         raise TypeError(f"File '{file}' does not exist or might be a directory")
 
-    siegfried_found = shutil.which("sf")
-    fido_found = shutil.which("fido")
-    pronom_backend = os.environ.get("PRONOM_BACKEND", None)
-
-    if pronom_backend is not None and pronom_backend not in ("fido", "siegfried", "sf"):
-        raise ValueError(
-            f"invalid PRONOM backend '{pronom_backend}' specified in PRONOM_BACKEND. "
-            "Valid options are 'fido' or 'sf'"
-        )
-
-    # If PRONOM_BACKEND is not set, default to siegfried, unless siegfried is not found.
-    # In that case, fallback to fido.
-    if pronom_backend is None:
-        if siegfried_found:
-            pronom_backend = "sf"
-        elif fido_found:
-            pronom_backend = "fido"
-        else:
-            raise RuntimeError(
-                "Neither 'fido' nor 'sf' (siegfried) appear to be installed. "
-                "At least one of these program is required for PRONOM detection. "
-                "For installation instructions, "
-                "see https://github.com/openpreserve/fido#installation (fido) "
-                "or https://github.com/richardlehane/siegfried#install (siegfried)"
-            )
-
-    if pronom_backend in ("sf", "siegfried"):
-        if not siegfried_found:
-            raise RuntimeError(
-                "Program 'sf' (siegfried) not found. "
-                "For installation instructions, see https://github.com/richardlehane/siegfried#install"
-            )
-        # log choice?
-        return _pronominfo_siegfried(file)
-
-    elif pronom_backend == "fido":
-        if not fido_found:
-            raise RuntimeError(
-                "Program 'fido' not found. "
-                "For installation instructions, see https://github.com/openpreserve/fido#installation"
-            )
-        # log choice?
-        return _pronominfo_fido(file)
+    return _pronominfo_siegfried(file)
 
 
 def _detect_verwijzing(informatieobject: TextIO | str) -> VerwijzingGegevens:
