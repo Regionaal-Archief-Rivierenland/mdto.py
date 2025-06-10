@@ -62,20 +62,16 @@ def _pronominfo_fido(file: str | Path) -> BegripGegevens:
 
 
 def _pronominfo_siegfried(file: str | Path) -> BegripGegevens:
-    cmd = ["sf", "--json", "--sym", file]
+    import pygfried
 
-    result = subprocess.run(
-        cmd, capture_output=True, shell=False, text=True, check=True
-    )
+    # we only care about the first file
+    prinfo = pygfried.identify(str(file), detailed=True)['files'][0]
 
-    # extract info about first file, since only one file is being passed to sf
-    sf_json = json.loads(result.stdout)["files"][0]
-
-    if "empty" in sf_json["errors"]:
+    if "empty" in prinfo["errors"]:
         helpers.logging.warning(f"{file} appears to be an empty file")
 
     # extract match
-    matches = sf_json["matches"]
+    matches = prinfo["matches"]
     if len(matches) > 1:
         helpers.logging.warning(
             "siegfried returned more than one PRONOM match "
