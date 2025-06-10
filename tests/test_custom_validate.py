@@ -1,7 +1,7 @@
 import pytest
 
-from mdto.gegevensgroepen import *
 from mdto import ValidationError
+from mdto.gegevensgroepen import *
 
 
 def test_validate_recursive(shared_informatieobject):

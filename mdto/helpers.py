@@ -1,7 +1,11 @@
 # Private helper methods
+
+import importlib.resources
+import logging
+import json
+from functools import lru_cache
 from pathlib import Path
 from typing import List, TextIO
-import logging
 
 import validators
 
@@ -14,6 +18,18 @@ logging.addLevelName(
     logging.WARNING,
     "\033[1;33m%s\033[1;0m" % logging.getLevelName(logging.WARNING),
 )
+
+
+@lru_cache(maxsize=1)
+def load_tooi_register_gemeenten():
+    """This function caches the JSON dict, so that it remains loaded within a single python session.
+
+    Makes a big difference in performance.
+    """
+    with importlib.resources.open_text(
+        "mdto.data", "rwc_gemeenten_compleet_4.json"
+    ) as f:
+        return json.load(f)
 
 
 def process_file(file_or_filename) -> TextIO:
