@@ -37,10 +37,7 @@
             <verwijzingIdentificatie>
                 <identificatieKenmerk>Informatieobject-4661a-5a3526</identificatieKenmerk>
                 <identificatieBron>Corsa</identificatieBron>
-            </verwijzingIdentificatie>
-        </isRepresentatieVan>
-    </bestand>
-</MDTO>
+                ...
 ```
 
 Naast gebruiksvriendelijkheid, streeft `mdto.py` ook een 100% correcte implementatie van het MDTO XML-schema te zijn. Deze correctheid wordt geverifieerd door de output van `mdto.py` met de MDTO XSD en voorbeeldbestanden te vergelijken (zie [tests/](tests/)).
