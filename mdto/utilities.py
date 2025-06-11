@@ -332,8 +332,6 @@ def from_xml(mdto_xml: TextIO | str) -> Informatieobject | Bestand:
     Example:
 
     ```python
-    import mdto
-
     # read informatieobject from file
     informatieobject = mdto.from_xml("Voorbeeld Archiefstuk Informatieobject.xml")
 
