@@ -367,16 +367,6 @@ def from_xml(mdto_xml: TextIO | str) -> Informatieobject | Bestand:
             node[1].text,
         )
 
-    # this is measurably faster than the elem_to_mdto variant
-    def parse_verwijzing(node) -> VerwijzingGegevens:
-        if len(node) == 1:
-            return VerwijzingGegevens(node[0].text)
-        else:
-            return VerwijzingGegevens(
-                node[0].text,
-                parse_identificatie(node[1]),
-            )
-
     # FIXME: return value
     def elem_to_mdto(elem: ET.Element, mdto_class: classmethod, mdto_xml_parsers: dict):
         """Initialize MDTO class (TermijnGegevens, EventGegevens, etc.) with values
@@ -407,6 +397,12 @@ def from_xml(mdto_xml: TextIO | str) -> Informatieobject | Bestand:
                 constructor_args[argname] = value[0]
 
         return mdto_class(**constructor_args)
+
+    verwijzing_parsers = {
+        "verwijzingNaam": parse_text,
+        "verwijzingIdentificatie": parse_identificatie,
+    }
+    parse_verwijzing = lambda e: elem_to_mdto(e, VerwijzingGegevens, verwijzing_parsers)
 
     begrip_parsers = {
         "begripLabel": parse_text,
