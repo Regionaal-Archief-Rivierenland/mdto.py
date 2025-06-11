@@ -337,7 +337,7 @@ def from_xml(mdto_xml: TextIO | str) -> Informatieobject | Bestand:
     # read informatieobject from file
     informatieobject = mdto.from_xml("Voorbeeld Archiefstuk Informatieobject.xml")
 
-    # edit the informatie object
+    # edit the informatieobject
     informatieobject.naam = "Verlenen kapvergunning Flipje's Erf 15 Tiel"
 
     # override the original informatieobject XML
