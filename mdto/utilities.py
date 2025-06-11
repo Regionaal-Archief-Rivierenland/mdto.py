@@ -347,7 +347,7 @@ def from_xml(mdto_xml: TextIO | str) -> Informatieobject | Bestand:
     Note:
         The parser will not raise an error when an element is required but
         missing, childless, or contains out of order children. It _will_ error if
-        it encounters tags that are not potential children of an element.
+        tags are not potential children of a given element.
 
         This follows Postel's law: we accept misformed MDTO, but only send
         strictly valid MDTO (at least with `.save()`). This allows mdto.py to
