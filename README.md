@@ -88,7 +88,7 @@ pip install .
 
 ## XML bestanden bouwen
 
-De primaire doelstellingen van `mdto.py` is het versimpelen van het bouwen van MDTO XMLs via Python. Om enkele voorbeelden te geven:
+De primaire doelstellingen van `mdto.py` is het versimpelen van het bouwen van MDTO XML via Python. Om enkele voorbeelden te geven:
 
 ``` python
 from mdto.gegevensgroepen import *  # importeer VerwijzingGegevens, BegripGegevens, BegripGegevens, etc.
