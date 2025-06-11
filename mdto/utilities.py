@@ -345,16 +345,17 @@ def from_xml(mdto_xml: TextIO | str) -> Informatieobject | Bestand:
     ```
 
     Note:
-        The parser will not raise an error when an element is required but
-        missing, childless, or contains out of order children. It _will_ error if
-        tags are not potential children of a given element.
+        The parser will not raise an error when an element is required,
+        but missing; childless; or contains out of order children. It
+        _will_ error if tags are not potential children of a given
+        element.
 
-        This follows Postel's law: we accept misformed MDTO, but only send
-        strictly valid MDTO (at least with `.save()`). This allows mdto.py to
-        be used for error correction.
+        This follows Postel's law: we accept malformed MDTO, but only
+        send strictly valid MDTO (at least with `.save()`). This
+        tolerance affords mdto.py error correction capabilities.
 
     Raises:
-        ValueError: XML voilates MDTO schema (though some violations are accepted;
+        ValueError: XML violates MDTO schema (though some violations are accepted;
          see above)
 
     Args:
