@@ -49,13 +49,14 @@ class Serializable:
             cls_name = self.__class__.__name__
             _ValidationError = lambda m: ValidationError([cls_name, field_name], m)
 
-            # optional fields may be None/empty
-            if optional_field and not field_value:
+            # optional fields may be None
+            if optional_field and field_value is None:
                 continue
 
-            # We're actually a little stricter than MDTO on this point
-            if not optional_field and not field_value:
-                raise _ValidationError("mandatory field cannot be empty or None")
+            # But otherwhise, None, empty lists, empty strings, etc. are not allowed
+            # (We're actually a little stricter than MDTO on this point)
+            if not field_value:
+                raise _ValidationError("field value must not be empty or None")
 
             # check if field is listable based on type hint
             if get_origin(field_type) is Union:
