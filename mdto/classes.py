@@ -56,7 +56,7 @@ class Serializable:
             # But otherwhise, None, empty lists, empty strings, etc. are not allowed
             # (We're actually a little stricter than MDTO on this point)
             if not field_value:
-                raise _ValidationError("field value must not be empty or None")
+                raise _ValidationError("field value may not be empty or None")
 
             # check if field is listable based on type hint
             if get_origin(field_type) is Union:
