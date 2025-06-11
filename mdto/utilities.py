@@ -329,9 +329,6 @@ def create_checksum(
 def from_xml(mdto_xml: TextIO | str) -> Informatieobject | Bestand:
     """Construct a Informatieobject/Bestand object from a MDTO XML file.
 
-    Note:
-        If `mdto_xml` is invalid MDTO, this function will probably throw an error.
-
     Example:
 
     ```python
@@ -346,6 +343,19 @@ def from_xml(mdto_xml: TextIO | str) -> Informatieobject | Bestand:
     # override the original informatieobject XML
     informatieobject.save("Voorbeeld Archiefstuk Informatieobject.xml")
     ```
+
+    Note:
+        The parser will not raise an error when an element is required but
+        missing, childless, or contains out of order children. It _will_ error if
+        it encounters tags that are not potential children of an element.
+
+        This follows Postel's law: we accept misformed MDTO, but only send
+        strictly valid MDTO (at least with `.save()`). This allows mdto.py to
+        be used for error correction.
+
+    Raises:
+        ValueError: XML voilates MDTO schema (though some violations are accepted;
+         see above)
 
     Args:
         mdto_xml (TextIO | str): The MDTO XML file to construct an Informatieobject/Bestand from
