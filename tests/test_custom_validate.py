@@ -26,9 +26,8 @@ def test_validate_sequence_type_checking(shared_informatieobject):
     with pytest.raises(ValidationError, match=r"\w+(\.\w+)+:\s+list items must be \w+, but found \w+, \w+"):
         shared_informatieobject.validate()
 
-def test_validate_sequence_type_checking(shared_informatieobject):
-    """Test validation of sequence type checking."""
-
+    # reset informatieobject back to normal
+    shared_informatieobject.identificatie = shared_informatieobject.identificatie[0]
     shared_informatieobject.naam = ["foo", "bar"]
     with pytest.raises(ValidationError, match=r"\w+(\.\w+)+:\s+got type \w+, but field does not accept sequences"):
         shared_informatieobject.validate()
