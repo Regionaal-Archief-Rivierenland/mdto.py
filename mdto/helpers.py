@@ -32,7 +32,7 @@ def load_tooi_register_gemeenten():
         return json.load(f)
 
 
-def process_file(file_or_filename) -> TextIO:
+def process_file(file_or_filename: TextIO | str) -> TextIO:
     """Return file-object if input is already a file.
     Otherwise, assume the argument is a path, and convert
     it to a new file-object.
