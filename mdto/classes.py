@@ -258,7 +258,7 @@ class BeperkingGebruikGegevens(Serializable):
 
     beperkingGebruikType: BegripGegevens
     beperkingGebruikNadereBeschrijving: str = None
-    beperkingGebruikDocumentatie: VerwijzingGegevens | list[VerwijzingGegevens] = None
+    beperkingGebruikDocumentatie: VerwijzingGegevens | List[VerwijzingGegevens] = None
     beperkingGebruikTermijn: TermijnGegevens = None
 
     def to_xml(self, root: str = "beperkingGebruik") -> ET.Element:
