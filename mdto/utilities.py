@@ -174,7 +174,7 @@ def bestand_from_file(
         verwijzing_obj = isrepresentatievan
     else:
         raise TypeError(
-            "isrepresentatievan must either be a path/file, or a VerwijzingGegevens object."
+            "isrepresentatievan must either be a path, file, or a VerwijzingGegevens object."
         )
 
     file.close()
@@ -343,18 +343,18 @@ def from_xml(mdto_xml: TextIO | str) -> Informatieobject | Bestand:
     ```
 
     Note:
-        The parser will not raise an error when an element is
-        required, but missing; childless; or contains out of order
-        children. It _will_ error if tags are not potential children
-        of a given element.
+        The parser tolerates some schema violations. Specfically, it will
+        _not_ error if elements are out of order, or if a required
+        element is missing. It _will_ error if tags are not potential
+        children of a given element.
 
-        This follows Postel's law: we accept malformed MDTO, but only
-        send strictly valid MDTO (at least with `.save()`). This
-        tolerance allows mdto.py to modify and correct invalid files. 
+        This follows Postel's law: we accept invalid MDTO, but only
+        "send" strictly valid MDTO (at least with `.save()`). This
+        tolerance allows mdto.py to modify and correct invalid files.
 
     Raises:
-        ValueError: XML violates MDTO schema (though some violations are accepted;
-         see above)
+        ValueError, KeyError: XML violates MDTO schema (though some
+         violations are tolerated; see above)
 
     Args:
         mdto_xml (TextIO | str): The MDTO XML file to construct an Informatieobject/Bestand from
