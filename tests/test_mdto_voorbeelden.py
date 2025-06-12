@@ -103,7 +103,7 @@ def test_file_saving(voorbeeld_archiefstuk_xml, tmp_path_factory):
     tmpdir = tmp_path_factory.mktemp("Output")
     outfile = tmpdir / "test archiefstuk.xml"
 
-    informatieobject = mdto.from_xml(voorbeeld_archiefstuk_xml)
+    informatieobject = Informatieobject.from_xml(voorbeeld_archiefstuk_xml)
     informatieobject.save(outfile)
 
     # MDTO uses CRLF (DOS) line endings. Convert them to UNIX line endings.
