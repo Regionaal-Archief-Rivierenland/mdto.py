@@ -377,7 +377,7 @@ def from_xml(mdto_xml: TextIO | str) -> Informatieobject | Bestand:
         )
 
     # FIXME: return value
-    def elem_to_mdto(elem: ET.Element, mdto_class: classmethod, mdto_xml_parsers: dict):
+    def elem_to_mdto(elem: ET.Element, mdto_class: Type[Any], mdto_xml_parsers: dict):
         """Initialize MDTO class (TermijnGegevens, EventGegevens, etc.) with values
         from a given XML node, using parsers specified in `mdto_xml_parsers`.
 
