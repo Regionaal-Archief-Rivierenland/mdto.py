@@ -371,15 +371,17 @@ class BetrokkeneGegevens(Serializable):
         return super().to_xml(root)
 
 
+# TODO: document constructing from the Object class directly?
 @dataclass
 class Object(Serializable):
     """https://www.nationaalarchief.nl/archiveren/mdto/object
 
-    This class serves as the parent class to Informatieobject and Bestand.
-    There is no reason to use it directly.
+    This class serves as the parent class to Informatieobject and
+    Bestand. There is no reason to use it directly.
 
-    MDTO objects that derive from this class inherit a save() method, which can be used
-    to write an Informatieobject/Bestand to a XML file.
+    MDTO objects that derive from this class inherit a from_xml() and
+    save() method, which can be used to read/write these objects
+    to/from XML files.
     """
 
     identificatie: IdentificatieGegevens | List[IdentificatieGegevens]
@@ -465,6 +467,70 @@ class Object(Serializable):
 
         xml = self.to_xml()
         xml.write(file_or_filename, **lxml_args)
+
+    @classmethod
+    def from_xml(cls, mdto_xml: TextIO | str):
+        """Construct a Informatieobject/Bestand object from a MDTO XML file.
+
+        Example:
+
+        ```python
+        # read informatieobject from file
+        archiefstuk = Informatieobject.from_xml("Voorbeeld Archiefstuk Informatieobject.xml")
+
+        # edit the informatieobject
+        archiefstuk.naam = "Verlenen kapvergunning Flipje's Erf 15 Tiel"
+
+        # override the original informatieobject XML
+        archiefstuk.save("Voorbeeld Archiefstuk Informatieobject.xml")
+        ```
+
+        Note:
+            The parser tolerates some schema violations. Specfically, it will
+            _not_ error if elements are out of order, or if a required
+            element is missing. It _will_ error if tags are not potential
+            children of a given element.
+
+            This follows Postel's law: we accept invalid MDTO, but only
+            "send" strictly valid MDTO (at least with `.save()`). This
+            tolerance allows mdto.py to modify and correct invalid files.
+
+        Raises:
+            ValueError, KeyError: XML violates MDTO schema (though some
+             violations are tolerated; see above)
+
+        Args:
+            mdto_xml (TextIO | str): The MDTO XML file to construct an Informatieobject/Bestand from
+
+        Returns:
+            Bestand | Informatieobject: A new MDTO object
+        """
+        # read xmlfile
+        tree = ET.parse(mdto_xml)
+        root = tree.getroot()
+        children = list(root[0])
+
+        # check if object type matches informatieobject/bestand
+        object_type = root[0].tag.removeprefix("{https://www.nationaalarchief.nl/mdto}")
+
+        cls_name_lowered = cls.__name__.lower()
+        # mostly needed for test to pass
+        if cls_name_lowered == "object":
+            if object_type == "informatieobject":
+                return Informatieobject._from_elem(children)
+            elif object_type == "bestand":
+                return Bestand._from_elem(children)
+            else:
+                raise ValueError(
+                    f"Unknown first child <{object_type}> in {mdto_xml}; first child must either be <informatieobject> or <bestand>"
+                )
+        elif cls_name_lowered != object_type:
+            raise ValueError(
+                f"Unexpected first child <{object_type}> in {mdto_xml}: "
+                f"expected <{cls_name_lowered}>"
+            )
+
+        return cls._from_elem(children)
 
 
 # TODO: place more restrictions on taal?
@@ -646,3 +712,86 @@ class Bestand(Object, Serializable):
                 ["bestand", "URLBestand"],
                 f"url {self.URLBestand} is malformed",
             )
+
+
+def _construct_deserialization_classmethods():
+    """
+    Construct the private `_from_elem()` classmethod on all subclasses
+    of `Serializable`.
+
+    This constructor executes on module import, and creates the
+    infrastructure of the public `from_xml()` classmethods of
+    Informatieobject and Bestand.
+    """
+
+    def resolve_type(field_type: type):
+        """Resolve a type from typing annotations. If Union[...] is
+        detected, return the type of the first item."""
+
+        origin = get_origin(field_type)
+        if origin is Union:
+            args = get_args(field_type)
+            return args[0]  # assume first type is what we care about
+
+        return field_type
+
+    def parse_text(elem: ET.Element) -> str:
+        return elem.text
+
+    def parse_int(elem: ET.Element) -> int:
+        return int(elem.text)
+
+    # measurably faster
+    def parse_identificatie(elem: ET.Element) -> IdentificatieGegevens:
+        return IdentificatieGegevens(
+            elem[0].text,
+            elem[1].text,
+        )
+
+    def from_elem_factory(cls, mdto_xml_parsers: dict) -> classmethod:
+        """Create initialized from_elem functions."""
+        def from_elem(inner_cls, elem: ET.Element):
+            constructor_args = {field: [] for field in mdto_xml_parsers}
+
+            for child in elem:
+                mdto_field = child.tag.removeprefix(
+                    "{https://www.nationaalarchief.nl/mdto}"
+                )
+                parser = mdto_xml_parsers[mdto_field]
+                constructor_args[mdto_field].append(parser(child))
+
+            # cleanup class constructor arguments
+            for argname, value in constructor_args.items():
+                # Replace empty argument lists by None
+                if len(value) == 0:
+                    constructor_args[argname] = None
+                # Replace one-itemed argument lists by their respective item
+                elif len(value) == 1:
+                    constructor_args[argname] = value[0]
+
+            return inner_cls(**constructor_args)
+
+        return classmethod(from_elem)
+
+    # This loop depends on the order of the Gegevensgroep defintions
+    for cls in Serializable.__subclasses__():
+        parsers = {}
+        for field in dataclasses.fields(cls):
+            field_name = field.name
+            field_type = resolve_type(field.type)
+
+            if field_type is str:
+                parsers[field_name] = parse_text
+            elif field_type is int:
+                parsers[field_name] = parse_int
+            elif field_type is IdentificatieGegevens:
+                parsers[field_name] = parse_identificatie
+            else:
+                # field_type == IdentificatieGegevens, VerwijzingGegevens, etc.
+                parsers[field_name] = field_type._from_elem
+
+        cls._from_elem = from_elem_factory(cls, parsers)
+
+
+# construct all _from_elem() classmethods immediately on import
+_construct_deserialization_classmethods()

@@ -153,12 +153,12 @@ Informatieobject(naam='Verlenen kapvergunning Hooigracht 21 Den Haag',  identifi
 
 ## XML bestanden inlezen
 
-`mdto.py` kan ook MDTO bestanden inlezen en naar Python MDTO objecten omzetten via `from_xml()`.
+`mdto.py` kan ook MDTO bestanden inlezen en naar Python MDTO objecten omzetten via `Informatieobject.from_xml()` of `Bestand.from_xml()`.
 
 Stel bijvoorbeeld dat je alle checksums van Bestand XML bestanden wilt updaten:
 
 ``` python
-import mdto
+from mdto.gegevensgroepen import *
 from pathlib import Path
 
 # Aangenomen dat je mapstructuur er zo uitziet:
@@ -175,7 +175,7 @@ from pathlib import Path
 
 # itereer door alle Bestand XMLs:
 for bestand_path in Path(".").rglob("*.bestand.mdto.xml"):
-    bestand = mdto.from_xml(bestand_path)
+    bestand = Bestand.from_xml(bestand_path)
 
     # vind naam + path van het te updaten bestand
     filename = bestand.naam  # in de regel bevat <naam> de bestandsnaam

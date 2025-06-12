@@ -15,7 +15,7 @@ def serialization_chain(xmlfile: str) -> str:
         str: the re-serailized XML, as a string
     """
     # Deserialize
-    object = mdto.from_xml(xmlfile)
+    object = mdto.Object.from_xml(xmlfile)
 
     # Serialize back to XML
     output_tree = object.to_xml()
@@ -32,7 +32,7 @@ def serialization_chain(xmlfile: str) -> str:
 
 def test_from_xml_archiefstuk(voorbeeld_archiefstuk_xml):
     """Test that from_xml() correctly parses Voorbeeld Archiefstuk Informatieobject.xml"""
-    archiefstuk = mdto.from_xml(voorbeeld_archiefstuk_xml)
+    archiefstuk = Informatieobject.from_xml(voorbeeld_archiefstuk_xml)
 
     assert isinstance(archiefstuk, Informatieobject)
     assert archiefstuk.naam == "Verlenen kapvergunning Hooigracht 21 Den Haag"
@@ -40,7 +40,7 @@ def test_from_xml_archiefstuk(voorbeeld_archiefstuk_xml):
 
 def test_from_xml_dossier(voorbeeld_dossier_xml):
     """Test that from_xml() correctly parses Voorbeeld Dossier Informatieobject.xml"""
-    dossier = mdto.from_xml(voorbeeld_dossier_xml)
+    dossier = Informatieobject.from_xml(voorbeeld_dossier_xml)
 
     assert isinstance(dossier, Informatieobject)
     assert dossier.trefwoord[1] == "kappen"
@@ -48,7 +48,7 @@ def test_from_xml_dossier(voorbeeld_dossier_xml):
 
 def test_from_xml_serie(voorbeeld_serie_xml):
     """Test that from_xml() correctly parses Voorbeeld Serie Informatieobject.xml"""
-    serie = mdto.from_xml(voorbeeld_serie_xml)
+    serie = Informatieobject.from_xml(voorbeeld_serie_xml)
 
     assert isinstance(serie, Informatieobject)
     assert serie.naam == "Vergunningen van de gemeente 's-Gravenhage vanaf 1980"
@@ -56,7 +56,7 @@ def test_from_xml_serie(voorbeeld_serie_xml):
 
 def test_from_xml_bestand(voorbeeld_bestand_xml):
     """Test that from_xml() correctly parses Voorbeeld Bestand.xml"""
-    bestand = mdto.from_xml(voorbeeld_bestand_xml)
+    bestand = Bestand.from_xml(voorbeeld_bestand_xml)
 
     assert isinstance(bestand, Bestand)
     assert (
