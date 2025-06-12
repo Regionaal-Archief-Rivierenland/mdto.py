@@ -3,7 +3,7 @@ import os
 import re
 from datetime import datetime
 from pathlib import Path
-from typing import List, TextIO
+from typing import List, TextIO, Type
 
 import lxml.etree as ET
 import pygfried
