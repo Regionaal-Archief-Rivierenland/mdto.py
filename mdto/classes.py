@@ -235,14 +235,6 @@ class ChecksumGegevens(Serializable):
     checksumWaarde: str
     checksumDatum: str
 
-    def to_xml(self, root: str = "checksum") -> ET.Element:
-        """Transform ChecksumGegevens into XML tree.
-
-        Returns:
-             ET.Element: XML representation
-        """
-        return super().to_xml(root)
-
 
 @dataclass
 class BeperkingGebruikGegevens(Serializable):
@@ -261,14 +253,6 @@ class BeperkingGebruikGegevens(Serializable):
     beperkingGebruikDocumentatie: VerwijzingGegevens | List[VerwijzingGegevens] = None
     beperkingGebruikTermijn: TermijnGegevens = None
 
-    def to_xml(self, root: str = "beperkingGebruik") -> ET.Element:
-        """Transform BeperkingGebruikGegevens into XML tree.
-
-        Returns:
-            ET.Element: XML representation of BeperkingGebruikGegevens
-        """
-        return super().to_xml(root)
-
 
 @dataclass
 class DekkingInTijdGegevens(Serializable):
@@ -283,9 +267,6 @@ class DekkingInTijdGegevens(Serializable):
     dekkingInTijdType: BegripGegevens
     dekkingInTijdBegindatum: str
     dekkingInTijdEinddatum: str = None
-
-    def to_xml(self, root: str = "dekkingInTijd") -> ET.Element:
-        return super().to_xml(root)
 
 
 @dataclass
@@ -303,9 +284,6 @@ class EventGegevens(Serializable):
     eventTijd: str = None
     eventVerantwoordelijkeActor: VerwijzingGegevens = None
     eventResultaat: str = None
-
-    def to_xml(self, root: str = "event") -> ET.Element:
-        return super().to_xml(root)
 
 
 @dataclass
@@ -335,9 +313,6 @@ class RaadpleeglocatieGegevens(Serializable):
                 f"url {self.raadpleeglocatieOnline} is malformed",
             )
 
-    def to_xml(self, root: str = "raadpleeglocatie"):
-        return super().to_xml(root)
-
 
 @dataclass
 class GerelateerdInformatieobjectGegevens(Serializable):
@@ -351,9 +326,6 @@ class GerelateerdInformatieobjectGegevens(Serializable):
     gerelateerdInformatieobjectVerwijzing: VerwijzingGegevens
     gerelateerdInformatieobjectTypeRelatie: BegripGegevens
 
-    def to_xml(self, root: str = "gerelateerdInformatieobject") -> ET.Element:
-        return super().to_xml(root)
-
 
 @dataclass
 class BetrokkeneGegevens(Serializable):
@@ -366,9 +338,6 @@ class BetrokkeneGegevens(Serializable):
 
     betrokkeneTypeRelatie: BegripGegevens
     betrokkeneActor: VerwijzingGegevens
-
-    def to_xml(self, root: str = "betrokkene") -> ET.Element:
-        return super().to_xml(root)
 
 
 # TODO: document constructing from the Object class directly?
