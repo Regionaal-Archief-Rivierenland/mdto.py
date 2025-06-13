@@ -365,6 +365,10 @@ class Object(Serializable):
     identificatie: IdentificatieGegevens | List[IdentificatieGegevens]
     naam: str
 
+    def __post_init__(self):
+        # adds possibility to associate MDTO objects with files
+        self._file: str | None = None
+
     def to_xml(self, root: str) -> ET.ElementTree:
         """Transform Object into an XML tree with the following structure:
 
@@ -478,15 +482,19 @@ class Object(Serializable):
              violations are tolerated; see above)
 
         Args:
-            mdto_xml (TextIO | str): The MDTO XML file to construct an Informatieobject/Bestand from
+            mdto_xml (TextIO | str): The MDTO XML file to construct an Informatieobject/Bestand from.
+             The path to this file is stored in the `._file` attribute to enable later reference.
 
         Returns:
             Bestand | Informatieobject: A new MDTO object
         """
-        # read xmlfile
+        # read XML file
         tree = ET.parse(mdto_xml)
         root = tree.getroot()
         children = list(root[0])
+
+        # store XML file path for later reference
+        self._file = mdto_xml.name if hasattr(mdto_xml, "write") else str(mdto_xml)
 
         # check if object type matches informatieobject/bestand
         object_type = root[0].tag.removeprefix("{https://www.nationaalarchief.nl/mdto}")
