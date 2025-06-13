@@ -508,7 +508,8 @@ class Object(Serializable):
                 obj = Bestand._from_elem(children)
             else:
                 raise ValueError(
-                    f"Unknown first child <{object_type}> in {mdto_xml}; first child must either be <informatieobject> or <bestand>"
+                    f"Unknown first child <{object_type}> in {mdto_xml}; "
+                    "first child must either be <informatieobject> or <bestand>"
                 )
         elif cls_name != object_type:
             raise ValueError(
