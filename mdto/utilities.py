@@ -189,8 +189,7 @@ def verwijzing_gegevens_from_tooi_gemeentenaam(gemeentenaam: str) -> VerwijzingG
     register.
 
     Expects a name from the 'TOOI register gemeente compleet' (e.g. `Tiel` or
-    `Gemeente Brielle`), and returns a VerwijzingGegevens object with a
-    corresponding code.
+    `Gemeente Brielle`), and returns a VerwijzingGegevens with a corresponding code.
 
     Example:
 
@@ -206,6 +205,7 @@ def verwijzing_gegevens_from_tooi_gemeentenaam(gemeentenaam: str) -> VerwijzingG
     Returns:
         VerwijzingGegevens: reference to a municipality in the TOOI register,
         including its assigned code
+
     """
 
     tooi_register_gemeenten = helpers.load_tooi_register_gemeenten()
@@ -239,7 +239,7 @@ def verwijzing_gegevens_from_tooi_gemeentecode(gemeentecode: str) -> VerwijzingG
     register.
 
     Expects a code from the 'TOOI register gemeente compleet' (e.g. `gm0218)`, and
-    returns a VerwijzingGegevens object with a corresponding name.
+    returns a VerwijzingGegevens with the corresponding name.
 
     Example:
 
