@@ -149,7 +149,7 @@ class Serializable:
                 new_sub_elem.text = str(val)
 
     @classmethod
-    def _from_elem(elem: ET.Element):
+    def _from_elem(cls, elem: ET.Element):
         """Private helper method stub.
 
         Is used internally in from_xml to construct a gegevensgroep from a ET.Element.
