@@ -21,7 +21,8 @@ def test_missing_but_required_tolerance(voorbeeld_archiefstuk_xml):
     root = tree.getroot()
     children = list(root[0])
     # delete naam
-    del children[0]
+    del children[1]
 
     archiefstuk = Informatieobject._from_elem(children)
+    assert archiefstuk.naam is None
     assert archiefstuk.taal == "nl"
