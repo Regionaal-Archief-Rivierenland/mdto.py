@@ -1,8 +1,6 @@
 import pytest
 
 import mdto
-from mdto.gegevensgroepen import *
-
 
 def test_gemeentecode_from_gemeentenaam():
     """Test retrieving VerwijzingGegevens object with both TOOI
