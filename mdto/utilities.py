@@ -229,7 +229,7 @@ def verwijzing_gegevens_from_tooi_gemeentenaam(gemeentenaam: str) -> VerwijzingG
             )
 
     raise ValueError(
-        f"Municipality with name '{gemeentenaam}' not found in 'TOOI register gemeenten compleet'\n"
+        f"'{gemeentenaam.title()}' not found in 'TOOI register gemeenten compleet'. "
         "For a list of possible values, see https://identifier.overheid.nl/tooi/set/rwc_gemeenten_compleet"
     )
 
