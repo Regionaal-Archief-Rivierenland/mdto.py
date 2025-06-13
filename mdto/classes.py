@@ -2,13 +2,13 @@ import dataclasses
 from dataclasses import dataclass
 from typing import Any, List, TextIO, Union, get_args, get_origin
 
+import lxml.etree as ET
+
 # allow running directly from interpreter
 try:
     from . import helpers
 except ImportError:
     import helpers
-
-import lxml.etree as ET
 
 # globals
 MDTO_MAX_NAAM_LENGTH = 80
@@ -156,7 +156,6 @@ class Serializable:
         This stub implementation is dynamically implemented at runtime.
         """
         pass
-
 
 
 @dataclass
@@ -729,6 +728,7 @@ def _construct_deserialization_classmethods():
 
     def from_elem_factory(cls, mdto_xml_parsers: dict) -> classmethod:
         """Create initialized from_elem functions."""
+
         def from_elem(inner_cls, elem: ET.Element):
             constructor_args = {field: [] for field in mdto_xml_parsers}
 
