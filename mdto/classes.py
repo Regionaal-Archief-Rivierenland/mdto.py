@@ -688,9 +688,9 @@ def _construct_deserialization_classmethods():
     Construct the private `_from_elem()` classmethod on all subclasses
     of `Serializable`.
 
-    This constructor executes on module import, and creates the
-    infrastructure of the public `from_xml()` classmethods of
-    Informatieobject and Bestand.
+    This constructor executes on module import, and creates helpers
+    for the public `from_xml()` classmethods of Informatieobject and
+    Bestand.
     """
 
     def resolve_type(field_type: type):
@@ -756,7 +756,7 @@ def _construct_deserialization_classmethods():
             elif field_type is IdentificatieGegevens:
                 parsers[field_name] = parse_identificatie
             else:
-                # field_type == IdentificatieGegevens, VerwijzingGegevens, etc.
+                # field_type == BegripGegevens, VerwijzingGegevens, etc.
                 parsers[field_name] = field_type._from_elem
 
         cls._from_elem = from_elem_factory(cls, parsers)
