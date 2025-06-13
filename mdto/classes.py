@@ -148,6 +148,16 @@ class Serializable:
                 new_sub_elem = ET.SubElement(root_elem, field_name)
                 new_sub_elem.text = str(val)
 
+    @classmethod
+    def _from_elem(elem: ET.Element):
+        """Private helper method stub.
+
+        Is used internally in from_xml to construct a gegevensgroep from a ET.Element.
+        This stub implementation is dynamically implemented at runtime.
+        """
+        pass
+
+
 
 @dataclass
 class IdentificatieGegevens(Serializable):
@@ -672,15 +682,6 @@ class Bestand(Object, Serializable):
             ET.ElementTree: XML tree representing Bestand object
         """
         return super().to_xml("bestand")
-
-    @classmethod
-    def _from_elem(elem: ET.Element):
-        """Private helper method stub.
-
-        Is used internally in from_xml to construct a gegevensgroep from a ET.Element.
-        This stub implementation is dynamically implemented at runtime.
-        """
-        pass
 
     def validate(self) -> None:
         """Check if URLBestand is a RFC 3986 compliant URI"""
