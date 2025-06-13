@@ -91,7 +91,7 @@ pip install .
 De primaire doelstellingen van `mdto.py` is het versimpelen van het bouwen van MDTO XML via Python. Om enkele voorbeelden te geven:
 
 ``` python
-from mdto.gegevensgroepen import *  # importeer VerwijzingGegevens, BegripGegevens, BegripGegevens, etc.
+from mdto.gegevensgroepen import *  # importeer VerwijzingGegevens, BegripGegevens, etc.
 
 # maak identificatiekenmerk element
 informatieobject_id = IdentificatieGegevens("Informatieobject-4661a", "Proza (OCW-DMS)")
