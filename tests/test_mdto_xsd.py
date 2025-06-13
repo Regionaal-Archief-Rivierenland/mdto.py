@@ -1,6 +1,8 @@
-import pytest
-import lxml.etree as ET
 from pathlib import Path
+
+import lxml.etree as ET
+import pytest
+
 import mdto
 from mdto.gegevensgroepen import *
 
