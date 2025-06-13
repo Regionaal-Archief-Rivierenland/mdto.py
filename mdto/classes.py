@@ -482,8 +482,8 @@ class Object(Serializable):
              violations are tolerated; see above)
 
         Args:
-            mdto_xml (TextIO | str): The MDTO XML file to construct an Informatieobject/Bestand from.
-             The path to this file is stored in the `._file` attribute to enable later reference.
+            mdto_xml (TextIO | str): The MDTO XML file to construct a Bestand/Informatieobject from.
+             The path to this file is stored in instances' `._file` attribute for future reference.
 
         Returns:
             Bestand | Informatieobject: A new MDTO object
@@ -494,29 +494,32 @@ class Object(Serializable):
         children = list(root[0])
 
         # store XML file path for later reference
-        self._file = mdto_xml.name if hasattr(mdto_xml, "write") else str(mdto_xml)
+        path = mdto_xml.name if hasattr(mdto_xml, "write") else str(mdto_xml)
 
         # check if object type matches informatieobject/bestand
         object_type = root[0].tag.removeprefix("{https://www.nationaalarchief.nl/mdto}")
 
-        cls_name_lowered = cls.__name__.lower()
+        cls_name = cls.__name__.lower()
         # mostly needed for test to pass; should this be documented?
-        if cls_name_lowered == "object":
+        if cls_name == "object":
             if object_type == "informatieobject":
-                return Informatieobject._from_elem(children)
+                obj = Informatieobject._from_elem(children)
             elif object_type == "bestand":
-                return Bestand._from_elem(children)
+                obj = Bestand._from_elem(children)
             else:
                 raise ValueError(
                     f"Unknown first child <{object_type}> in {mdto_xml}; first child must either be <informatieobject> or <bestand>"
                 )
-        elif cls_name_lowered != object_type:
+        elif cls_name != object_type:
             raise ValueError(
                 f"Unexpected first child <{object_type}> in {mdto_xml}: "
-                f"expected <{cls_name_lowered}>"
+                f"expected <{cls_name}>"
             )
+        else:
+            obj = cls._from_elem(children)
 
-        return cls._from_elem(children)
+        obj._file = path
+        return obj
 
 
 # TODO: place more restrictions on taal?
