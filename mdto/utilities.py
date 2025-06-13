@@ -277,7 +277,7 @@ def verwijzing_gegevens_from_tooi_gemeentecode(gemeentecode: str) -> VerwijzingG
             )
 
     raise ValueError(
-        f"Code '{gemeente_code}' not found in 'TOOI register gemeenten compleet'. "
+        f"Code '{gemeentecode}' not found in 'TOOI register gemeenten compleet'. "
         "For a list of possible values, see https://identifier.overheid.nl/tooi/set/rwc_gemeenten_compleet"
     )
 
