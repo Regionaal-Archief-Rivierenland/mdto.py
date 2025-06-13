@@ -483,7 +483,7 @@ class Object(Serializable):
         object_type = root[0].tag.removeprefix("{https://www.nationaalarchief.nl/mdto}")
 
         cls_name_lowered = cls.__name__.lower()
-        # mostly needed for test to pass
+        # mostly needed for test to pass; should this be documented?
         if cls_name_lowered == "object":
             if object_type == "informatieobject":
                 return Informatieobject._from_elem(children)
@@ -673,6 +673,15 @@ class Bestand(Object, Serializable):
         """
         return super().to_xml("bestand")
 
+    @classmethod
+    def _from_elem(elem: ET.Element):
+        """Private helper method stub.
+
+        Is used internally in from_xml to construct a gegevensgroep from a ET.Element.
+        This stub implementation is dynamically implemented at runtime.
+        """
+        pass
+
     def validate(self) -> None:
         """Check if URLBestand is a RFC 3986 compliant URI"""
         super().validate()
@@ -742,7 +751,7 @@ def _construct_deserialization_classmethods():
 
         return classmethod(from_elem)
 
-    # This loop depends on the order of the Gegevensgroep defintions
+    # This loop depends on the order of the gegevensgroep defintions in this file
     for cls in Serializable.__subclasses__():
         parsers = {}
         for field in dataclasses.fields(cls):
@@ -751,13 +760,15 @@ def _construct_deserialization_classmethods():
 
             if field_type is str:
                 parsers[field_name] = parse_text
-            elif field_type is int:
-                parsers[field_name] = parse_int
             elif field_type is IdentificatieGegevens:
                 parsers[field_name] = parse_identificatie
-            else:
+            elif issubclass(field_type, Serializable):
                 # field_type == BegripGegevens, VerwijzingGegevens, etc.
                 parsers[field_name] = field_type._from_elem
+            elif field_type is int:
+                parsers[field_name] = parse_int
+            else:
+                parsers[field_name] = parse_text
 
         cls._from_elem = from_elem_factory(cls, parsers)
 
