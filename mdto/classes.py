@@ -168,9 +168,8 @@ class Serializable:
         """
         pass
 
-    def to_json(self) -> None:
-        """Serializes MDTO gegevensgroep to JSON"""
-        import json
+    def to_json(self) -> str:
+        """Serializes MDTO gegevensgroep to pretty-printed JSON string"""
         return json.dumps(dataclasses.asdict(self), indent=4)
 
 
