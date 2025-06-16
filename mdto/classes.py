@@ -57,11 +57,6 @@ class Serializable:
             if optional_field and field_value is None:
                 continue
 
-            # But otherwhise, None, empty lists, empty strings, etc. are not allowed
-            # (We're actually a little stricter than MDTO on this point)
-            if not field_value:
-                raise _ValidationError("field value may not be empty or None")
-
             # check if field is listable based on type hint
             if get_origin(field_type) is Union:
                 expected_type = get_args(field_type)[0]
@@ -99,6 +94,13 @@ class Serializable:
                         path + deeper_error.field_path,
                         deeper_error.msg,
                     ) from None  # Suppress the original traceback
+            else:
+                # primitive singleton
+                # empty lists, empty strings, etc. are not allowed.
+                # None is allowed, but only for optional elements (see above)
+                # (We're actually a little stricter than MDTO on this point)
+                if field_value is None or len(str(field_value)) == 0:
+                    raise _ValidationError("field value may not be empty or None")
 
     def _mdto_ordered_fields(self) -> List:
         """Sort dataclass fields by their order in the MDTO XSD.
@@ -113,7 +115,7 @@ class Serializable:
         return dataclasses.fields(self)
 
     def to_xml(self, root: str) -> ET.Element:
-        """Transform dataclass to XML tree.
+        """Serialize MDTO gegevensgroep to XML tree.
 
         Args:
             root (str): name of the new root tag
@@ -165,6 +167,11 @@ class Serializable:
         This stub implementation is dynamically implemented at runtime.
         """
         pass
+
+    def to_json(self) -> None:
+        """Serializes MDTO gegevensgroep to JSON"""
+        import json
+        return json.dumps(dataclasses.asdict(self), indent=4)
 
 
 @dataclass
