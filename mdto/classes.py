@@ -1,4 +1,5 @@
 import dataclasses
+import json
 from dataclasses import dataclass
 from typing import Any, List, TextIO, Union, get_args, get_origin
 
@@ -167,6 +168,13 @@ class Serializable:
         This stub implementation is dynamically implemented at runtime.
         """
         pass
+
+    def to_json(self) -> None:
+        """Serializes MDTO gegevensgroep to JSON"""
+        # TODO: remove nulls
+        # add informatieobject as the main key
+        return json.dumps(dataclasses.asdict(self), indent=4)
+
 
 
 @dataclass
