@@ -97,10 +97,10 @@ class Serializable:
             else:
                 # primitive singleton
                 # empty lists, empty strings, etc. are not allowed.
-                # None is allowed, but only for optional elements (see above)
                 # (We're actually a little stricter than MDTO on this point)
+                # None is allowed, but only for optional elements (see above)
                 if field_value is None or len(str(field_value)) == 0:
-                    raise _ValidationError("field value may not be empty or None")
+                    raise _ValidationError("field value must not be empty or None")
 
     def _mdto_ordered_fields(self) -> List:
         """Sort dataclass fields by their order in the MDTO XSD.
