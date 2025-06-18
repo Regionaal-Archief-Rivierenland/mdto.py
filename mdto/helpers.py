@@ -3,6 +3,8 @@
 import importlib.resources
 import logging
 import json
+import re
+from datetime import datetime
 from functools import lru_cache
 from pathlib import Path
 from typing import List, TextIO
@@ -73,3 +75,39 @@ def validate_url_or_urls(url: str | List[str]) -> bool:
     # listify string
     url = [url] if isinstance(url, str) else url
     return all(validators.url(u) for u in url)
+
+# contains (datefmt, len), in order to ensure precense of zero padded months/days
+_date_fmts = [
+    ("%Y", 4),
+    ("%Y-%m", 7),
+    ("%Y-%m-%d", 10),
+    ("%Y-%m-%dT%H:%M:%S", 19),
+]
+
+def valid_mdto_date(date: str) -> bool:
+    """Check if date is complaint with the MDTO schema rules.
+
+    This is called during validate(), which handles error raising.
+
+    Returns:
+        bool: True if date is valid; false if not
+    """
+    # strip and capture timezone info
+    date, _, tz_info_hh, tz_info_mm = re.fullmatch(r"(.*?)(Z|[+-](\d{2}):(\d{2}))?", date).groups()
+
+    #  verify timezone information
+    if tz_info_mm:
+        # check if in range of hh:mm
+        if int(tz_info_mm) > 59 or int(tz_info_hh) > 23:
+            return False
+
+    for fmt, expected_len in _date_fmts:
+        try:
+            # check for precense of zero padding
+            if len(date) == expected_len:
+                datetime.strptime(date, fmt)
+                return True
+        except ValueError: # striptime() raises this on misformatted dates
+            continue
+
+    return False

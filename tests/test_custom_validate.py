@@ -2,6 +2,7 @@ import pytest
 
 from mdto import ValidationError
 from mdto.gegevensgroepen import *
+from mdto.helpers import valid_mdto_date
 
 
 def test_validate_recursive(shared_informatieobject):
@@ -54,3 +55,29 @@ def test_validate_url(shared_informatieobject):
         match=r"\w+(\.\w+)+:\s+url .* is malformed",
     ):
         shared_informatieobject.validate()
+
+
+@pytest.mark.parametrize(
+    "date_str",
+    [
+        "2001",
+        "2020-10Z",
+        "2001-10-12T12:05:11",
+        "2001-10+02:00",
+    ],
+)
+def test_valid_dates(date_str):
+    assert valid_mdto_date(date_str)
+
+
+@pytest.mark.parametrize(
+    "date_str",
+    [
+        "2001-13",  # no 13th month
+        "99-10",  # year must have four digits
+        "2020-10+25:00",  # invalid TZ
+        "2001-10-12T12:05:70",  # invalid seconds
+    ],
+)
+def test_invalid_dates(date_str):
+    assert not valid_mdto_date(date_str)
