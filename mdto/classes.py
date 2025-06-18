@@ -632,7 +632,6 @@ class Object(Serializable):
         return VerwijzingGegevens(self.naam, self.identificatie)
 
 
-# TODO: place more restrictions on taal?
 @dataclass
 class Informatieobject(Object, Serializable):
     """https://www.nationaalarchief.nl/archiveren/mdto/informatieobject
@@ -751,6 +750,15 @@ class Informatieobject(Object, Serializable):
             ET.ElementTree: XML tree representing the Informatieobject object
         """
         return super().to_xml("informatieobject")
+
+    def validate(self) -> None:
+        super().validate()
+        if self.taal and not helpers.valid_langcode(self.taal):
+            raise ValidationError(
+                ["Informatieobject", "taal"],
+                f"'{self.taal}' is not a valid RFC3066 language code. "
+                "For more information, see https://en.wikipedia.org/wiki/IETF_language_tag.",
+            )
 
 
 @dataclass

@@ -159,3 +159,8 @@ def valid_duration(duration: str) -> bool:
             duration,
         )
     )
+
+
+def valid_langcode(langcode: str) -> bool:
+    """Check if language code is complaint with xs:language/RFC3066."""
+    return bool(re.fullmatch(r"[a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})*", langcode))
