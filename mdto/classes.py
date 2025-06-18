@@ -533,6 +533,18 @@ class Object(Serializable):
         obj._file = path
         return obj
 
+    def verwijzing(self) -> VerwijzingGegevens:
+        """
+        Create a VerwijzingGegevens object that references the Informatieobject/Bestand.
+        Useful to populate `heeftRepresentatie` or `isOnderdeelVan`.
+
+        Returns:
+            VerwijzingGegevens: reference with the Informatieobject/Bestand's name and ID
+        """
+        return VerwijzingGegevens(
+            self.naam,
+            self.identificatie
+        )
 
 # TODO: place more restrictions on taal?
 @dataclass
