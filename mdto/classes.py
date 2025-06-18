@@ -541,10 +541,8 @@ class Object(Serializable):
         Returns:
             VerwijzingGegevens: reference with the Informatieobject/Bestand's name and ID
         """
-        return VerwijzingGegevens(
-            self.naam,
-            self.identificatie
-        )
+        return VerwijzingGegevens(self.naam, self.identificatie)
+
 
 # TODO: place more restrictions on taal?
 @dataclass
