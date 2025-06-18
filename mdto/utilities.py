@@ -118,7 +118,7 @@ def bestand_from_file(
     file: TextIO | str,
     identificatie: IdentificatieGegevens | List[IdentificatieGegevens],
     isrepresentatievan: VerwijzingGegevens | TextIO | str,
-    url: str = None,
+    url: str | None = None,
 ) -> Bestand:
     """Convenience function for creating a Bestand object from a file.
 
