@@ -299,11 +299,13 @@ class ChecksumGegevens(Serializable):
     def validate(self) -> None:
         super().validate()
 
-        if self.checksumDatum and not helpers.valid_mdto_datetime_precise(self.checksumDatum):
+        if self.checksumDatum and not helpers.valid_mdto_datetime_precise(
+            self.checksumDatum
+        ):
             raise DateValidationError(
                 ["Bestand", "checksum", "checksumDatum"],
                 self.checksumDatum,
-                ["%Y-%m-%dT%H:%M:%S"]
+                ["%Y-%m-%dT%H:%M:%S"],
             )
 
 
@@ -403,24 +405,24 @@ class RaadpleeglocatieGegevens(Serializable):
     def validate(self) -> None:
         super().validate()
 
-        if self.raadpleeglocatieOnline:
-            # listify string
-            urls = (
-                [self.raadpleeglocatieOnline]
-                if isinstance(self.raadpleeglocatieOnline, str)
-                else self.raadpleeglocatieOnline
-            )
-            for u in urls:
-                if not helpers.valid_url(u):
-                    raise ValidationError(
-                        # FIXME: maybe this path should be generated on the fly?
-                        [
-                            "informatieobject",
-                            "raadpleeglocatie",
-                            "raadpleeglocatieOnline",
-                        ],
-                        f"url {self.raadpleeglocatieOnline} is malformed",
-                    )
+        # listify
+        urls = (
+            [self.raadpleeglocatieOnline]
+            if isinstance(self.raadpleeglocatieOnline, str)
+            else self.raadpleeglocatieOnline or [] # handle raadpleeglocatieOnline is None
+        )
+
+        for u in urls:
+            if not helpers.valid_url(u):
+                raise ValidationError(
+                    # FIXME: maybe this path should be generated on the fly?
+                    [
+                        "informatieobject",
+                        "raadpleeglocatie",
+                        "raadpleeglocatieOnline",
+                    ],
+                    f"url {u} is malformed",
+                )
 
 
 @dataclass
