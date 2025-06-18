@@ -299,12 +299,11 @@ class ChecksumGegevens(Serializable):
     def validate(self) -> None:
         super().validate()
 
-        if self.checksumDatum and not helpers.valid_mdto_datetime(self.checksumDatum):
-            # FIXME: I guess that the proper path may not always include a informatieobject
+        if self.checksumDatum and not helpers.valid_mdto_datetime_precise(self.checksumDatum):
             raise DateValidationError(
                 ["Bestand", "checksum", "checksumDatum"],
                 self.checksumDatum,
-                [f for f, _ in helpers.datetime_fmts],
+                ["%Y-%m-%dT%H:%M:%S"]
             )
 
 
