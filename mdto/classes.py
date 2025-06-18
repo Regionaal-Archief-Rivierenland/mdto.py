@@ -275,7 +275,12 @@ class TermijnGegevens(Serializable):
                 [f for f, _ in helpers.date_fmts],
             )
 
-        # TODO: duration
+        if self.termijnLooptijd and not helpers.valid_duration(self.termijnLooptijd):
+            raise ValidationError(
+                ["termijnLooptijd"],
+                f"'{self.termijnLooptijd}' is not a valid duration. See "
+                "https://www.w3.org/TR/xmlschema-2/#duration for more information.",
+            )
 
 
 @dataclass
