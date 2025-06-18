@@ -345,6 +345,7 @@ class DekkingInTijdGegevens(Serializable):
         super().validate()
 
         supported_fmts = [f for f, _ in helpers.date_fmts]
+
         if not helpers.valid_mdto_date(self.dekkingInTijdBegindatum):
             raise DateValidationError(
                 ["Informatieobject", "dekkingInTijd", "dekkingInTijdBegindatum"],
@@ -759,7 +760,7 @@ class Informatieobject(Object, Serializable):
             raise ValidationError(
                 ["Informatieobject", "taal"],
                 f"'{self.taal}' is not a valid RFC3066 language code. "
-                "For more information, see https://en.wikipedia.org/wiki/IETF_language_tag.",
+                "See https://en.wikipedia.org/wiki/IETF_language_tag for more information.",
             )
 
 
