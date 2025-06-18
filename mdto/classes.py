@@ -265,7 +265,7 @@ class TermijnGegevens(Serializable):
             raise DateValidationError(
                 ["termijnStartdatumLooptijd"],
                 self.termijnStartdatumLooptijd,
-                helpers.date_fmt_precise[0][0],
+                ["%Y-%m-%d"],
             )
 
         if self.termijnEinddatum and not helpers.valid_mdto_date(self.termijnEinddatum):
