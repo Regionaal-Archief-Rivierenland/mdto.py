@@ -7,7 +7,7 @@ import re
 from datetime import datetime
 from functools import lru_cache
 from pathlib import Path
-from typing import List, TextIO
+from typing import List, Tuple, TextIO
 
 import validators
 
@@ -77,21 +77,16 @@ def validate_url_or_urls(url: str | List[str]) -> bool:
     return all(validators.url(u) for u in url)
 
 # contains (datefmt, len), in order to ensure precense of zero padded months/days
-_date_fmts = [
+date_fmts = [
     ("%Y", 4),
     ("%Y-%m", 7),
     ("%Y-%m-%d", 10),
-    ("%Y-%m-%dT%H:%M:%S", 19),
-]
+ ]
+datetime_fmts = date_fmts + [("%Y-%m-%dT%H:%M:%S", 19)]
 
-def valid_mdto_date(date: str) -> bool:
-    """Check if date is complaint with the MDTO schema rules.
+def _valid_mdto_date(date: str, fmts: List[Tuple]) -> bool:
+    """Generic datachecking function; use valid_mdto_datetime or valid_mdto_date."""
 
-    This is called during validate(), which handles error raising.
-
-    Returns:
-        bool: True if date is valid; false if not
-    """
     # strip and capture timezone info
     date, _, tz_info_hh, tz_info_mm = re.fullmatch(r"(.*?)(Z|[+-](\d{2}):(\d{2}))?", date).groups()
 
@@ -101,7 +96,7 @@ def valid_mdto_date(date: str) -> bool:
         if int(tz_info_mm) > 59 or int(tz_info_hh) > 23:
             return False
 
-    for fmt, expected_len in _date_fmts:
+    for fmt, expected_len in fmts:
         try:
             # check for precense of zero padding
             if len(date) == expected_len:
@@ -111,3 +106,24 @@ def valid_mdto_date(date: str) -> bool:
             continue
 
     return False
+
+
+def valid_mdto_datetime(date: str) -> bool:
+    """Check if datetime is complaint with the MDTO schema rules.
+
+    This is called during validate(), which handles error raising.
+
+    Returns:
+        bool: True if date is valid; false if not
+    """
+    return _valid_mdto_date(date, datetime_fmts)
+
+def valid_mdto_date(date: str) -> bool:
+    """Check if date is complaint with the MDTO schema rules.
+
+    This is called during validate(), which handles error raising.
+
+    Returns:
+        bool: True if date is valid; false if not
+    """
+    return _valid_mdto_date(date, date_fmts)

@@ -2,7 +2,7 @@ import pytest
 
 from mdto import ValidationError
 from mdto.gegevensgroepen import *
-from mdto.helpers import valid_mdto_date
+from mdto.helpers import valid_mdto_datetime
 
 
 def test_validate_recursive(shared_informatieobject):
@@ -67,7 +67,7 @@ def test_validate_url(shared_informatieobject):
     ],
 )
 def test_valid_dates(date_str):
-    assert valid_mdto_date(date_str)
+    assert valid_mdto_datetime(date_str)
 
 
 @pytest.mark.parametrize(
@@ -80,4 +80,4 @@ def test_valid_dates(date_str):
     ],
 )
 def test_invalid_dates(date_str):
-    assert not valid_mdto_date(date_str)
+    assert not valid_mdto_datetime(date_str)

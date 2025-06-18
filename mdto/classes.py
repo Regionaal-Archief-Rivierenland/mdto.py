@@ -288,6 +288,24 @@ class DekkingInTijdGegevens(Serializable):
     dekkingInTijdBegindatum: str
     dekkingInTijdEinddatum: str = None
 
+    def validate(self) -> None:
+        super().validate()
+
+        supported_formats = "\n".join(
+            f"\t\t• {fmt}" for fmt, _ in helpers.date_fmts
+        )
+        _ValidationError = lambda date, field: ValidationError(
+            ["informatieobject", "dekkingInTijd", field],
+            f"Date '{date}' is incorrectly formatted or non-existant; {field} supports:\n\n"
+            f"{supported_formats}\n\n"
+            "\tEach format may include timezone info, e.g. '+01:00' or 'Z'"
+        )
+
+        if not helpers.valid_mdto_date(self.dekkingInTijdBegindatum):
+            raise _ValidationError(self.dekkingInTijdBegindatum, "dekkingInTijdBegindatum")
+
+        if self.dekkingInTijdEinddatum and not helpers.valid_mdto_date(self.dekkingInTijdEinddatum):
+            raise _ValidationError(self.dekkingInTijdEinddatum, "dekkingInTijdEinddatum")
 
 @dataclass
 class EventGegevens(Serializable):
@@ -304,6 +322,24 @@ class EventGegevens(Serializable):
     eventTijd: str = None
     eventVerantwoordelijkeActor: VerwijzingGegevens = None
     eventResultaat: str = None
+
+    def validate(self) -> None:
+        super().validate()
+        if self.eventTijd and not helpers.valid_mdto_datetime(self.eventTijd):
+            # FIXME: I guess that the proper path may not always include a informatieobject
+            supported_formats = "\n".join(
+                f"\t\t• {fmt}" for fmt, _ in helpers.datetime_fmts
+            )
+            raise ValidationError(
+                [
+                    "informatieobject",
+                    "event",
+                    "eventTijd",
+                ],
+                f"Datetime '{self.eventTijd}' is incorrectly formatted or non-existant; eventTijd supports:\n\n"
+                f"{supported_formats}\n\n"
+                "\tEach format may include timezone info, e.g. '+01:00' or 'Z'"
+            )
 
 
 @dataclass
