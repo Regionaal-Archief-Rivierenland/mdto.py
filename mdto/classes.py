@@ -209,8 +209,7 @@ class VerwijzingGegevens(Serializable):
     verwijzingNaam: str
     verwijzingIdentificatie: IdentificatieGegevens = None
 
-    def validate(self):
-        """Warn about long names."""
+    def validate(self) -> None:
         super().validate()
         if len(self.verwijzingNaam) > MDTO_MAX_NAAM_LENGTH:
             helpers.logging.warning(
@@ -297,7 +296,7 @@ class ChecksumGegevens(Serializable):
     checksumWaarde: str
     checksumDatum: str
 
-    def validate(self):
+    def validate(self) -> None:
         super().validate()
 
         if self.checksumDatum and not helpers.valid_mdto_datetime(self.checksumDatum):
@@ -502,8 +501,7 @@ class Object(Serializable):
         ET.indent(tree, space="\t")
         return tree
 
-    def validate(self):
-        """Warn about long names."""
+    def validate(self) -> None:
         super().validate()
         if len(self.naam) > MDTO_MAX_NAAM_LENGTH:
             helpers.logging.warning(
