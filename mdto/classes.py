@@ -255,6 +255,28 @@ class TermijnGegevens(Serializable):
     termijnLooptijd: str = None
     termijnEinddatum: str = None
 
+    def validate(self) -> None:
+        # FIXME: get a way to retrieve a more complete path?
+        super().validate()
+
+        if self.termijnStartdatumLooptijd and not helpers.valid_mdto_date_precise(
+            self.termijnStartdatumLooptijd
+        ):
+            raise DateValidationError(
+                ["termijnStartdatumLooptijd"],
+                self.termijnStartdatumLooptijd,
+                helpers.date_fmt_precise[0][0],
+            )
+
+        if self.termijnEinddatum and not helpers.valid_mdto_date(self.termijnEinddatum):
+            raise DateValidationError(
+                ["termijnEinddatum"],
+                self.termijnEinddatum,
+                [f for f, _ in helpers.date_fmts],
+            )
+
+        # TODO: duration
+
 
 @dataclass
 class ChecksumGegevens(Serializable):
@@ -269,6 +291,17 @@ class ChecksumGegevens(Serializable):
     checksumAlgoritme: BegripGegevens
     checksumWaarde: str
     checksumDatum: str
+
+    def validate(self):
+        super().validate()
+
+        if self.checksumDatum and not helpers.valid_mdto_datetime(self.checksumDatum):
+            # FIXME: I guess that the proper path may not always include a informatieobject
+            raise DateValidationError(
+                ["Bestand", "checksum", "checksumDatum"],
+                self.checksumDatum,
+                [f for f, _ in helpers.datetime_fmts],
+            )
 
 
 @dataclass
@@ -306,21 +339,23 @@ class DekkingInTijdGegevens(Serializable):
     def validate(self) -> None:
         super().validate()
 
-        supported_formats = "\n".join(
-            f"\t\t• {fmt}" for fmt, _ in helpers.date_fmts
-        )
-        _ValidationError = lambda date, field: ValidationError(
-            ["informatieobject", "dekkingInTijd", field],
-            f"Date '{date}' is incorrectly formatted or non-existant; {field} supports:\n\n"
-            f"{supported_formats}\n\n"
-            "\tEach format may include timezone info, e.g. '+01:00' or 'Z'"
-        )
-
+        supported_fmts = [f for f, _ in helpers.date_fmts]
         if not helpers.valid_mdto_date(self.dekkingInTijdBegindatum):
-            raise _ValidationError(self.dekkingInTijdBegindatum, "dekkingInTijdBegindatum")
+            raise DateValidationError(
+                ["Informatieobject", "dekkingInTijd", "dekkingInTijdBegindatum"],
+                self.dekkingInTijdBegindatum,
+                supported_fmts,
+            )
 
-        if self.dekkingInTijdEinddatum and not helpers.valid_mdto_date(self.dekkingInTijdEinddatum):
-            raise _ValidationError(self.dekkingInTijdEinddatum, "dekkingInTijdEinddatum")
+        if self.dekkingInTijdEinddatum and not helpers.valid_mdto_date(
+            self.dekkingInTijdEinddatum
+        ):
+            raise DateValidationError(
+                ["Informatieobject", "dekkingInTijd", "dekkingInTijdEinddatum"],
+                self.dekkingInTijdEinddatum,
+                supported_fmts,
+            )
+
 
 @dataclass
 class EventGegevens(Serializable):
@@ -340,20 +375,13 @@ class EventGegevens(Serializable):
 
     def validate(self) -> None:
         super().validate()
+
         if self.eventTijd and not helpers.valid_mdto_datetime(self.eventTijd):
             # FIXME: I guess that the proper path may not always include a informatieobject
-            supported_formats = "\n".join(
-                f"\t\t• {fmt}" for fmt, _ in helpers.datetime_fmts
-            )
-            raise ValidationError(
-                [
-                    "informatieobject",
-                    "event",
-                    "eventTijd",
-                ],
-                f"Datetime '{self.eventTijd}' is incorrectly formatted or non-existant; eventTijd supports:\n\n"
-                f"{supported_formats}\n\n"
-                "\tEach format may include timezone info, e.g. '+01:00' or 'Z'"
+            raise DateValidationError(
+                ["Informatieobject", "event", "eventTijd"],
+                self.eventTijd,
+                [f for f, _ in helpers.datetime_fmts],
             )
 
 

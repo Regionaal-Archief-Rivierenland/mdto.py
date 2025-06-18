@@ -77,11 +77,11 @@ def validate_url_or_urls(url: str | List[str]) -> bool:
     return all(validators.url(u) for u in url)
 
 # contains (datefmt, len), in order to ensure precense of zero padded months/days
-date_fmts = [
+date_fmt_precise = [("%Y-%m-%d", 10)]
+date_fmts = date_fmt_precise + [
     ("%Y", 4),
     ("%Y-%m", 7),
-    ("%Y-%m-%d", 10),
- ]
+]
 datetime_fmts = date_fmts + [("%Y-%m-%dT%H:%M:%S", 19)]
 
 def _valid_mdto_date(date: str, fmts: List[Tuple]) -> bool:
@@ -127,3 +127,13 @@ def valid_mdto_date(date: str) -> bool:
         bool: True if date is valid; false if not
     """
     return _valid_mdto_date(date, date_fmts)
+
+def valid_mdto_date_precise(date: str) -> bool:
+    """Check if date is complaint with xs:date (YYYY-MM-DD).
+
+    This is called during validate(), which handles error raising.
+
+    Returns:
+        bool: True if date is valid; false if not
+    """
+    return _valid_mdto_date(date, date_fmt_precise)
