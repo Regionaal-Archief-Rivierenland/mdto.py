@@ -82,11 +82,13 @@ date_fmts = date_fmt_precise + [
 ]
 datetime_fmts = date_fmts + [("%Y-%m-%dT%H:%M:%S", 19)]
 
-def _valid_mdto_date(date: str, fmts: List[Tuple]) -> bool:
-    """Generic datachecking function; use valid_mdto_datetime or valid_mdto_date."""
 
+def _valid_mdto_date(date: str, fmts: List[Tuple]) -> bool:
+    """Generic date checking function; use valid_mdto_datetime or valid_mdto_date"""
     # strip and capture timezone info
-    date, _, tz_info_hh, tz_info_mm = re.fullmatch(r"(.*?)(Z|[+-](\d{2}):(\d{2}))?", date).groups()
+    date, _, tz_info_hh, tz_info_mm = re.fullmatch(
+        r"(.*?)(Z|[+-](\d{2}):(\d{2}))?", date
+    ).groups()
 
     #  verify timezone information
     if tz_info_mm:
@@ -100,48 +102,32 @@ def _valid_mdto_date(date: str, fmts: List[Tuple]) -> bool:
             if len(date) == expected_len:
                 datetime.strptime(date, fmt)
                 return True
-        except ValueError: # striptime() raises this on misformatted dates
+        except ValueError:  # striptime() raises this on misformatted dates
             continue
 
     return False
 
 
 def valid_mdto_datetime(date: str) -> bool:
-    """Check if datetime is complaint with the MDTO schema rules.
-
-    This is called during validate(), which handles error raising.
-
-    Returns:
-        bool: True if date is valid; false if not
-    """
+    """Check if date is a correctly formatted datetime, year+month, or year."""
     return _valid_mdto_date(date, datetime_fmts)
 
+
+def valid_mdto_datetime_precise(date: str) -> bool:
+    """Check if date matches xs:datetime (YYYY-MM-DDThh:mm:ss) exactly."""
+    return _valid_mdto_date(date, [datetime_fmts[-1]])
+
+
 def valid_mdto_date(date: str) -> bool:
-    """Check if date is complaint with the MDTO schema rules.
-
-    This is called during validate(), which handles error raising.
-
-    Returns:
-        bool: True if date is valid; false if not
-    """
+    """Check if date is a correctly formatted calendar date, year+month, or year."""
     return _valid_mdto_date(date, date_fmts)
 
+
 def valid_mdto_date_precise(date: str) -> bool:
-    """Check if date is complaint with xs:date (YYYY-MM-DD).
-
-    This is called during validate(), which handles error raising.
-
-    Returns:
-        bool: True if date is valid; false if not
-    """
+    """Check if date matches xs:date (YYYY-MM-DD) exactly."""
     return _valid_mdto_date(date, date_fmt_precise)
 
-def valid_duration(duration: str) -> bool:
-    """Check if duration is complaint with xs:duration/ISO8601
 
-    Returns:
-        bool: True if duration is valid; false if not
-    """
 
     # modified from https://github.com/gweis/isodate
     return bool(
