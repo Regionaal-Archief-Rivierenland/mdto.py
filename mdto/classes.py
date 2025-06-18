@@ -327,7 +327,6 @@ class RaadpleeglocatieGegevens(Serializable):
                 [
                     "informatieobject",
                     "raadpleeglocatie",
-                    "RaadpleeglocatieGegevens",
                     "raadpleeglocatieOnline",
                 ],
                 f"url {self.raadpleeglocatieOnline} is malformed",
