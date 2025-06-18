@@ -401,18 +401,26 @@ class RaadpleeglocatieGegevens(Serializable):
     raadpleeglocatieOnline: str | List[str] = None
 
     def validate(self) -> None:
-        """Check if raadpleeglocatieOnline is a RFC 3986 compliant URI."""
         super().validate()
-        if not helpers.validate_url_or_urls(self.raadpleeglocatieOnline):
-            raise ValidationError(
-                # FIXME: maybe this path should be generated on the fly?
-                [
-                    "informatieobject",
-                    "raadpleeglocatie",
-                    "raadpleeglocatieOnline",
-                ],
-                f"url {self.raadpleeglocatieOnline} is malformed",
+
+        if self.raadpleeglocatieOnline:
+            # listify string
+            urls = (
+                [self.raadpleeglocatieOnline]
+                if isinstance(self.raadpleeglocatieOnline, str)
+                else self.raadpleeglocatieOnline
             )
+            for u in urls:
+                if not helpers.valid_url(u):
+                    raise ValidationError(
+                        # FIXME: maybe this path should be generated on the fly?
+                        [
+                            "informatieobject",
+                            "raadpleeglocatie",
+                            "raadpleeglocatieOnline",
+                        ],
+                        f"url {self.raadpleeglocatieOnline} is malformed",
+                    )
 
 
 @dataclass
@@ -796,9 +804,8 @@ class Bestand(Object, Serializable):
         return super().to_xml("bestand")
 
     def validate(self) -> None:
-        """Check if URLBestand is a RFC 3986 compliant URI"""
         super().validate()
-        if not helpers.validate_url_or_urls(self.URLBestand):
+        if self.URLBestand and not helpers.valid_url(self.URLBestand):
             raise ValidationError(
                 ["bestand", "URLBestand"],
                 f"url {self.URLBestand} is malformed",

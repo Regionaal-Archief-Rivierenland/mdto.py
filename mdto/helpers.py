@@ -61,20 +61,18 @@ def process_file(file_or_filename: TextIO | str) -> TextIO:
         )
 
 
-def validate_url_or_urls(url: str | List[str]) -> bool:
+def valid_url(url: str) -> bool:
     """Checks if URL(s) are RFC 3986 compliant URIs.
 
     Args:
-        url (str | List[str]): URL or URLs to check
+        url (str): URL or URLs to check
 
     Returns:
         bool: whether the URL(s) are RFC 3986 compliant URIs
     """
-    if url is None:  # in MDTO, URLS are never mandatory
-        return True
-    # listify string
-    url = [url] if isinstance(url, str) else url
-    return all(validators.url(u) for u in url)
+
+    return validators.url(url)
+
 
 # contains (datefmt, len), in order to ensure precense of zero padded months/days
 date_fmt_precise = [("%Y-%m-%d", 10)]
