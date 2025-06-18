@@ -23,6 +23,21 @@ class ValidationError(TypeError):
         self.msg = msg
 
 
+class DateValidationError(ValidationError):
+    """Custom formatter for MDTO date(time) validation errors"""
+
+    def __init__(self, field_path: list[str], date: str, fmts: list[str]):
+        # Format bullet list
+        supported_fmts = "\n".join(f"\t• {fmt}" for fmt in fmts)
+        field_name = field_path[-1]
+        msg = (
+            f"Date '{value}' is incorrectly formatted or non-existent; {field_name} supports:\n\n"
+            f"{supported_fmts}\n\n"
+            "\tEach format may include timezone info, e.g. '+01:00' or 'Z'"
+        )
+        super().__init__(field_path, msg)
+
+
 # TODO: update name and docstring to be more descriptive? Now, this class does more than just serialize
 # or maybe refactor?
 class Serializable:
