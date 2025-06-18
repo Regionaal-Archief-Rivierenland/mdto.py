@@ -128,9 +128,11 @@ def valid_mdto_date_precise(date: str) -> bool:
     return _valid_mdto_date(date, date_fmt_precise)
 
 
+def valid_duration(duration: str) -> bool:
+    """Check if duration is complaint with xs:duration/ISO8601."""
 
     # modified from https://github.com/gweis/isodate
-    return bool(
+    return len(duration) > 1 and bool(
         re.fullmatch(
             r"[+-]?P"
             r"(?:\d+(?:[.,]\d+)?Y)?"
