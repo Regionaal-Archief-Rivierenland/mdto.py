@@ -2,7 +2,7 @@ import pytest
 
 from mdto import ValidationError
 from mdto.gegevensgroepen import *
-from mdto.helpers import valid_mdto_datetime
+from mdto.helpers import valid_mdto_datetime, valid_duration
 
 
 def test_validate_recursive(shared_informatieobject):
@@ -81,3 +81,27 @@ def test_valid_dates(date_str):
 )
 def test_invalid_dates(date_str):
     assert not valid_mdto_datetime(date_str)
+
+@pytest.mark.parametrize(
+    "duration_str",
+    [
+        "P3Y6M4DT12H30M5S",
+        "P0.5Y",
+        "P10W",
+    ]
+)
+def test_valid_durations(duration_str):
+    assert valid_duration(duration_str)
+
+@pytest.mark.parametrize(
+    "duration_str",
+    [
+        "P",              # just 'P' is not enough
+        "P12",            # no time indication providedt
+        "P1YM",           # 'M' alone after 'Y' is not valid (missing number)
+        "1Y2M",           # missing leading 'P'
+        "P10W20Y",        # out of order
+    ]
+)
+def test_invalid_durations(duration_str):
+    assert not valid_duration(duration_str)
