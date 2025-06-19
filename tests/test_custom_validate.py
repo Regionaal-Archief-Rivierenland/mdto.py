@@ -101,6 +101,7 @@ def test_valid_durations(duration_str):
         "P1YM",           # 'M' alone after 'Y' is not valid (missing number)
         "1Y2M",           # missing leading 'P'
         "P10W20Y",        # out of order
+        "-P10Y",          # negative duration are not supported
     ]
 )
 def test_invalid_durations(duration_str):

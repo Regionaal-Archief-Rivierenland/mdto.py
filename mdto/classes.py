@@ -381,7 +381,6 @@ class EventGegevens(Serializable):
 
     def validate(self) -> None:
         super().validate()
-
         if self.eventTijd and not helpers.valid_mdto_datetime(self.eventTijd):
             # FIXME: I guess that the proper path may not always include a informatieobject
             raise DateValidationError(

@@ -134,7 +134,7 @@ def valid_duration(duration: str) -> bool:
     # modified from https://github.com/gweis/isodate
     return len(duration) > 1 and bool(
         re.fullmatch(
-            r"[+-]?P"
+            r"\+?P"
             r"(?:\d+(?:[.,]\d+)?Y)?"
             r"(?:\d+(?:[.,]\d+)?M)?"
             r"(?:\d+(?:[.,]\d+)?W)?"
