@@ -1,6 +1,5 @@
 # Private helper methods
 
-import importlib.resources
 import logging
 import json
 import re
@@ -9,7 +8,6 @@ from functools import lru_cache
 from pathlib import Path
 from typing import List, Tuple, TextIO
 
-import validators
 
 # setup logging
 logging.basicConfig(
@@ -28,6 +26,8 @@ def load_tooi_register_gemeenten():
 
     Makes a big difference in performance.
     """
+    import importlib.resources # importing here improves helpers.py initialization speed
+
     with importlib.resources.open_text(
         "mdto.data", "rwc_gemeenten_compleet_4.json"
     ) as f:
@@ -70,8 +70,9 @@ def valid_url(url: str) -> bool:
     Returns:
         bool: whether the URL(s) are RFC 3986 compliant URIs
     """
+    from validators import url as _valid_url
 
-    return validators.url(url)
+    return _valid_url(url)
 
 
 # contains (datefmt, len), in order to ensure precense of zero padded months/days
