@@ -289,7 +289,7 @@ class ChecksumGegevens(Serializable):
     Note:
         When building Bestand objects, it's recommended to call the convience
         function `bestand_from_file()` instead.  And if you just need to update
-        a Bestand object's checksum, you should use `create_checksum()`.
+        a Bestand's checksum, you should use `create_checksum()`.
     """
 
     checksumAlgoritme: BegripGegevens
