@@ -344,13 +344,11 @@ class DekkingInTijdGegevens(Serializable):
     def validate(self) -> None:
         super().validate()
 
-        supported_fmts = [f for f, _ in helpers.date_fmts]
-
         if not helpers.valid_mdto_date(self.dekkingInTijdBegindatum):
             raise DateValidationError(
                 ["Informatieobject", "dekkingInTijd", "dekkingInTijdBegindatum"],
                 self.dekkingInTijdBegindatum,
-                supported_fmts,
+                [f for f, _ in helpers.date_fmts],
             )
 
         if self.dekkingInTijdEinddatum and not helpers.valid_mdto_date(
@@ -359,7 +357,7 @@ class DekkingInTijdGegevens(Serializable):
             raise DateValidationError(
                 ["Informatieobject", "dekkingInTijd", "dekkingInTijdEinddatum"],
                 self.dekkingInTijdEinddatum,
-                supported_fmts,
+                [f for f, _ in helpers.date_fmts],
             )
 
 
