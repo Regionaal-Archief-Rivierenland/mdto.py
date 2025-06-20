@@ -186,7 +186,7 @@ class Serializable:
 
 @dataclass
 class IdentificatieGegevens(Serializable):
-    """https://www.nationaalarchief.nl/archiveren/mdto/identificatieGegevens
+    """https://nationaalarchief.nl/archiveren/mdto/identificatieGegevens
 
     Args:
         identificatieKenmerk (str): Een kenmerk waarmee een object geïdentificeerd kan worden
@@ -199,7 +199,7 @@ class IdentificatieGegevens(Serializable):
 
 @dataclass
 class VerwijzingGegevens(Serializable):
-    """https://www.nationaalarchief.nl/archiveren/mdto/verwijzingsGegevens
+    """https://nationaalarchief.nl/archiveren/mdto/verwijzingsGegevens
 
     Args:
         verwijzingNaam (str): Naam van het object waarnaar verwezen wordt
@@ -219,7 +219,7 @@ class VerwijzingGegevens(Serializable):
 
 @dataclass
 class BegripGegevens(Serializable):
-    """https://www.nationaalarchief.nl/archiveren/mdto/begripGegevens
+    """https://nationaalarchief.nl/archiveren/mdto/begripGegevens
 
     Args:
         begripLabel (str): De tekstweergave van het begrip
@@ -240,7 +240,7 @@ class BegripGegevens(Serializable):
 
 @dataclass
 class TermijnGegevens(Serializable):
-    """https://www.nationaalarchief.nl/archiveren/mdto/termijnGegevens
+    """https://nationaalarchief.nl/archiveren/mdto/termijnGegevens
 
     Args:
         termijnTriggerStartLooptijd (Optional[BegripGegevens]): Gebeurtenis waarna de looptijd van de termijn start
@@ -284,7 +284,7 @@ class TermijnGegevens(Serializable):
 
 @dataclass
 class ChecksumGegevens(Serializable):
-    """https://www.nationaalarchief.nl/archiveren/mdto/checksum
+    """https://nationaalarchief.nl/archiveren/mdto/checksum
 
     Note:
         When building Bestand objects, it's recommended to call the convience
@@ -311,7 +311,7 @@ class ChecksumGegevens(Serializable):
 
 @dataclass
 class BeperkingGebruikGegevens(Serializable):
-    """https://www.nationaalarchief.nl/archiveren/mdto/beperkingGebruik
+    """https://nationaalarchief.nl/archiveren/mdto/beperkingGebruik
 
     Args:
         beperkingGebruikType (BegripGegevens): Typering van de beperking
@@ -329,7 +329,7 @@ class BeperkingGebruikGegevens(Serializable):
 
 @dataclass
 class DekkingInTijdGegevens(Serializable):
-    """https://www.nationaalarchief.nl/archiveren/mdto/dekkingInTijd
+    """https://nationaalarchief.nl/archiveren/mdto/dekkingInTijd
 
     Args:
         dekkingInTijdType (BegripGegevens): Typering van de periode waar het informatieobject betrekking op heeft
@@ -365,7 +365,7 @@ class DekkingInTijdGegevens(Serializable):
 
 @dataclass
 class EventGegevens(Serializable):
-    """https://www.nationaalarchief.nl/archiveren/mdto/event
+    """https://nationaalarchief.nl/archiveren/mdto/event
 
     Args:
         eventType (BegripGegevens): Aanduiding van het type event
@@ -392,7 +392,7 @@ class EventGegevens(Serializable):
 
 @dataclass
 class RaadpleeglocatieGegevens(Serializable):
-    """https://www.nationaalarchief.nl/archiveren/mdto/raadpleeglocatie
+    """https://nationaalarchief.nl/archiveren/mdto/raadpleeglocatie
 
     Args:
         raadpleeglocatieFysiek (Optional[VerwijzingGegevens])): Fysieke raadpleeglocatie van het informatieobject
@@ -427,7 +427,7 @@ class RaadpleeglocatieGegevens(Serializable):
 
 @dataclass
 class GerelateerdInformatieobjectGegevens(Serializable):
-    """https://www.nationaalarchief.nl/archiveren/mdto/gerelateerdInformatieobjectGegevens
+    """https://nationaalarchief.nl/archiveren/mdto/gerelateerdInformatieobjectGegevens
 
     Args:
         gerelateerdInformatieobjectVerwijzing (VerwijzingGegevens): Verwijzing naar het gerelateerde informatieobject
@@ -440,7 +440,7 @@ class GerelateerdInformatieobjectGegevens(Serializable):
 
 @dataclass
 class BetrokkeneGegevens(Serializable):
-    """https://www.nationaalarchief.nl/archiveren/mdto/betrokkeneGegevens
+    """https://nationaalarchief.nl/archiveren/mdto/betrokkeneGegevens
 
     Args:
         betrokkeneTypeRelatie (BegripGegevens): Typering van de betrokkenheid van de actor bij het informatieobject
@@ -454,7 +454,7 @@ class BetrokkeneGegevens(Serializable):
 # TODO: document constructing from the Object class directly?
 @dataclass
 class Object(Serializable):
-    """https://www.nationaalarchief.nl/archiveren/mdto/object
+    """https://nationaalarchief.nl/archiveren/mdto/object
 
     This class serves as the parent class to Informatieobject and
     Bestand. There is no reason to use it directly.
@@ -636,7 +636,7 @@ class Object(Serializable):
 
 @dataclass
 class Informatieobject(Object, Serializable):
-    """https://www.nationaalarchief.nl/archiveren/mdto/informatieobject
+    """https://nationaalarchief.nl/archiveren/mdto/informatieobject
 
     Example:
 
@@ -765,7 +765,7 @@ class Informatieobject(Object, Serializable):
 
 @dataclass
 class Bestand(Object, Serializable):
-    """https://www.nationaalarchief.nl/archiveren/mdto/bestand
+    """https://nationaalarchief.nl/archiveren/mdto/bestand
 
     Note:
         When creating Bestand objects, it's easier to use the
