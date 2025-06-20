@@ -53,7 +53,7 @@ class Serializable:
            Typing information is infered based on type hints.
 
         Raises:
-            ValidationError: field violates typing constraints of MDTO schema
+            ValidationError: field violates the MDTO schema
         """
         for field in dataclasses.fields(self):
             field_name = field.name
