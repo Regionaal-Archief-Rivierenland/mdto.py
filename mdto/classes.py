@@ -815,7 +815,7 @@ class Bestand(Object, Serializable):
         super().validate()
         if self.URLBestand and not helpers.valid_url(self.URLBestand):
             raise ValidationError(
-                ["bestand", "URLBestand"],
+                ["Bestand", "URLBestand"],
                 f"url {self.URLBestand} is malformed",
             )
 
