@@ -61,16 +61,16 @@ class Serializable:
             field_type = field.type
             optional_field = field.default is None
 
+            # optional fields may be None
+            if optional_field and field_value is None:
+                continue
+
             cls_name = self.__class__.__name__
             _ValidationError = (
                 lambda m: ValidationError([cls_name, field_name], m)
                 if cls_name in ["Informatieobject", "Bestand"]
                 else ValidationError([field_name], m)
             )
-
-            # optional fields may be None
-            if optional_field and field_value is None:
-                continue
 
             # check if field is listable based on type hint
             if get_origin(field_type) is Union:
