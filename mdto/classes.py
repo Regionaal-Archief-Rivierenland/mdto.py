@@ -178,8 +178,8 @@ class Serializable:
     def _from_elem(cls, elem: ET.Element):
         """Private helper method stub.
 
-        Is used internally in from_xml to construct a gegevensgroep from a ET.Element.
-        This stub implementation is dynamically implemented at runtime.
+        Used within from_xml() to construct a gegevensgroep from an ET.Element.
+        This stub is dynamically implemented at runtime.
         """
         pass
 
