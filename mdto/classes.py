@@ -1,6 +1,6 @@
 import dataclasses
 from dataclasses import dataclass
-from typing import Any, List, TextIO, Union, get_args, get_origin
+from typing import Any, List, TextIO, Union, get_args, get_origin, TypeVar, Type
 
 import lxml.etree as ET
 
@@ -12,6 +12,9 @@ except ImportError:
 
 # globals
 MDTO_MAX_NAAM_LENGTH = 80
+
+# needed to inform LSPs about @classmethod return types
+ObjectT = TypeVar("ObjectT", bound="Object")
 
 
 class ValidationError(TypeError):
@@ -550,7 +553,7 @@ class Object(Serializable):
         xml.write(file_or_filename, **lxml_args)
 
     @classmethod
-    def from_xml(cls, mdto_xml: TextIO | str):
+    def from_xml(cls: Type[ObjectT], mdto_xml: TextIO | str) -> ObjectT:
         """Construct a Informatieobject/Bestand object from a MDTO XML file.
 
         Example:
