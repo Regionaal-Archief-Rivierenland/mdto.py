@@ -857,12 +857,14 @@ def _construct_deserialization_classmethods():
             elem[1].text,
         )
 
-    def from_elem_factory(cls, mdto_xml_parsers: dict) -> classmethod:
+    def from_elem_factory(mdto_xml_parsers: dict) -> classmethod:
         """Create initialized from_elem functions."""
 
-        def from_elem(inner_cls, elem: ET.Element):
-            constructor_args = {field: [] for field in mdto_xml_parsers}
+        def from_elem(cls, elem: ET.Element):
+            """Convert XML elements (`elem`) to MDTO classes (`inner_cls`)"""
 
+            # it may seem like pre computing this is faster, but it is not
+            constructor_args = {field: [] for field in mdto_xml_parsers}
             for child in elem:
                 mdto_field = child.tag.removeprefix(
                     "{https://www.nationaalarchief.nl/mdto}"
@@ -879,7 +881,7 @@ def _construct_deserialization_classmethods():
                 elif len(value) == 1:
                     constructor_args[argname] = value[0]
 
-            return inner_cls(**constructor_args)
+            return cls(**constructor_args)
 
         return classmethod(from_elem)
 
@@ -902,7 +904,7 @@ def _construct_deserialization_classmethods():
             else:
                 parsers[field_name] = parse_text
 
-        cls._from_elem = from_elem_factory(cls, parsers)
+        cls._from_elem = from_elem_factory(parsers)
 
 
 # construct all _from_elem() classmethods immediately on import
