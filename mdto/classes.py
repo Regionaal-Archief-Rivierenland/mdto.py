@@ -861,7 +861,7 @@ def _construct_deserialization_classmethods():
         """Create initialized from_elem functions."""
 
         def from_elem(cls, elem: ET.Element):
-            """Convert XML elements (`elem`) to MDTO classes (`inner_cls`)"""
+            """Convert XML elements (`elem`) to MDTO classes (`cls`)"""
 
             # it may seem like pre computing this is faster, but it is not
             constructor_args = {field: [] for field in mdto_xml_parsers}
