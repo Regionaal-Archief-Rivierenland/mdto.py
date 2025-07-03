@@ -4,6 +4,7 @@ import re
 from datetime import datetime
 from pathlib import Path
 from typing import List, TextIO, Type, Any
+import mimetypes
 
 import lxml.etree as ET
 import pygfried
@@ -73,6 +74,29 @@ def pronominfo(file: str | Path) -> BegripGegevens:
     return _pronominfo_siegfried(file)
 
 
+def mimetypeinfo(file: str | Path) -> BegripGegevens:
+    """Generate MIME type information about `file`. This information can be used in
+    a Bestand's `<bestandsformaat>` tag.
+
+    Args:
+        file (str | Path): Path to the file to inspect
+
+    Returns:
+        BegripGegevens: Object with the following properties:
+          - `begripLabel`: The file's MIME subtype
+          - `begripCode`: The file's MIME type (top-level type + subtype)
+          - `begripBegrippenLijst`: A reference to the IANA registry
+    """
+    # strict means: use only mimetypes registered with the IANA
+    mimetype, _ = mimetypes.guess_file_type(file, strict=True)
+
+    if mimetype is None:
+        raise RuntimeError(f"failed to detect MIME type information about {file}")
+
+    subtype = re.search(r".*\/(.*)", mimetype).group(1)
+
+    return BegripGegevens(subtype, VerwijzingGegevens("IANA Media types"), mimetype)
+
 def _detect_verwijzing(informatieobject: TextIO | str) -> VerwijzingGegevens:
     """A Bestand object must contain a reference to a corresponding
     informatieobject.  Specifically, it expects an <isRepresentatieVan> tag with
@@ -119,6 +143,7 @@ def bestand_from_file(
     identificatie: IdentificatieGegevens | List[IdentificatieGegevens],
     isrepresentatievan: VerwijzingGegevens | TextIO | str,
     url: str | None = None,
+    use_mimetype: bool = False,
 ) -> Bestand:
     """Convenience function for creating a Bestand object from a file.
 
@@ -137,6 +162,8 @@ def bestand_from_file(
           VerwijzingGegevens referencing an informatieobject.
           Used to construct the values for <isRepresentatieVan>.
         url (Optional[str]): value of <URLBestand>
+        use_mimetype (Optional[bool]): populate `<bestandsformaat>`
+          with mimetype instead of pronom info
 
     Example:
       ```python
@@ -159,7 +186,11 @@ def bestand_from_file(
     naam = os.path.basename(file.name)
 
     omvang = os.path.getsize(file.name)
-    bestandsformaat = pronominfo(file.name)
+    if not use_mimetype:
+        bestandsformaat = pronominfo(file.name)
+    else:
+        bestandsformaat = mimetypeinfo(file.name)
+
     checksum = create_checksum(file)
 
     # file or file path?
