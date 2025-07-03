@@ -61,8 +61,11 @@ def pronominfo(file: str | Path) -> BegripGegevens:
     Args:
         file (str | Path): Path to the file to inspect
 
+    Raises:
+        RuntimeError: siegfried failed to detect PRONOM info
+
     Returns:
-        BegripGegevens: Object with the following attributes:
+        BegripGegevens: Object with the following properties:
           - `begripLabel`: The file's PRONOM signature name
           - `begripCode`: The file's PRONOM ID
           - `begripBegrippenLijst`: A reference to the PRONOM registry
