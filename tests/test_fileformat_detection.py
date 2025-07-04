@@ -21,6 +21,6 @@ def test_mimetype(voorbeeld_archiefstuk_xml):
     got = mimetypeinfo(voorbeeld_archiefstuk_xml)
     # windows favors "text/xml"
     if got.begripCode == "text/xml":
-        got.begripCode == "application/xml"
+        got.begripCode = "application/xml"
 
     assert expected == got
