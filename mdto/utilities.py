@@ -97,7 +97,7 @@ def mimetypeinfo(file: str | Path) -> BegripGegevens:
     if mimetype is None:
         raise RuntimeError(f"failed to detect MIME type information about {file}")
 
-    subtype = re.search(r".*\/(.*)", mimetype).group(1)
+    _, subtype = mimetype.split("/")
 
     return BegripGegevens(subtype, VerwijzingGegevens("IANA Media types"), mimetype)
 
