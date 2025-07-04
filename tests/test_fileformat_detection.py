@@ -19,7 +19,7 @@ def test_mimetype(voorbeeld_archiefstuk_xml):
         "xml", VerwijzingGegevens("IANA Media types"), "application/xml"
     )
     got = mimetypeinfo(voorbeeld_archiefstuk_xml)
-    # this fixes this test on windows, which favors "text/"
+    # windows favors "text/xml"
     if got.begripCode == "text/xml":
         got.begripCode == "application/xml"
 
