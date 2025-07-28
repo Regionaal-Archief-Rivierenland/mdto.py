@@ -595,8 +595,6 @@ class Object(Serializable):
         root = tree.getroot()
         children = list(root[0])
 
-        # store XML file path for later reference
-        path = mdto_xml.name if hasattr(mdto_xml, "write") else str(mdto_xml)
 
         # check if object type matches informatieobject/bestand
         object_type = root[0].tag.removeprefix("{https://www.nationaalarchief.nl/mdto}")
@@ -621,7 +619,9 @@ class Object(Serializable):
         else:
             obj = cls._from_elem(children)
 
-        obj._file = path
+        # store XML file path for later reference
+        # todo: normalize this so that it will always store an absolute path?
+        obj._file = mdto_xml.name if hasattr(mdto_xml, "write") else str(mdto_xml)
         return obj
 
     def verwijzing(self) -> VerwijzingGegevens:
