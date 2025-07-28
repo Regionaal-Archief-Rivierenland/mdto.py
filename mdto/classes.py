@@ -1,5 +1,5 @@
 import dataclasses
-from dataclasses import dataclass
+from dataclasses import dataclass, Field
 from typing import Any, List, TextIO, Union, get_args, get_origin, TypeVar, Type
 
 import lxml.etree as ET
@@ -120,7 +120,7 @@ class Serializable:
                 if field_value is None or len(str(field_value)) == 0:
                     raise _ValidationError("field value must not be empty or None")
 
-    def _mdto_ordered_fields(self) -> List:
+    def _mdto_ordered_fields(self) -> List[Field]:
         """Sort dataclass fields by their order in the MDTO XSD.
 
         This method should be overridden when the order of fields in
@@ -234,7 +234,7 @@ class BegripGegevens(Serializable):
     begripBegrippenlijst: VerwijzingGegevens
     begripCode: str = None
 
-    def _mdto_ordered_fields(self) -> List:
+    def _mdto_ordered_fields(self) -> List[Field]:
         """Sort dataclass fields by their order in the MDTO XSD."""
         fields = super()._mdto_ordered_fields()
         # swap order of begripBegrippenlijst and begripCode
@@ -700,7 +700,7 @@ class Informatieobject(Object, Serializable):
     betrokkene: BetrokkeneGegevens | List[BetrokkeneGegevens] = None
     activiteit: VerwijzingGegevens | List[VerwijzingGegevens] = None
 
-    def _mdto_ordered_fields(self) -> List:
+    def _mdto_ordered_fields(self) -> List[Field]:
         """Sort dataclass fields by their order in the MDTO XSD."""
         sorting_mapping = {
             "identificatie": 0,
@@ -788,7 +788,7 @@ class Bestand(Object, Serializable):
     isRepresentatieVan: VerwijzingGegevens
     URLBestand: str = None
 
-    def _mdto_ordered_fields(self) -> List:
+    def _mdto_ordered_fields(self) -> List[Field]:
         """Sort dataclass fields by their order in the MDTO XSD."""
         fields = super()._mdto_ordered_fields()
         # swap order of isRepresentatieVan and URLbestand
