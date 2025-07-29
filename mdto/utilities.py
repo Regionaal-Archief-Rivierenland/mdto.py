@@ -178,7 +178,7 @@ def bestand_from_file(
           IdentificatieGegevens('34c5-4379-9f1a-5c378', 'Proza (DMS)'),
           isrepresentatievan=verwijzing_obj  # or pass the actual file
      )
-     bestand.save("vergunning.bestand.mdto.xml")
+     bestand.save("vergunning.pdf.bestand.mdto.xml")
       ```
 
     Returns:
