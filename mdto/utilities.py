@@ -146,7 +146,6 @@ def bestand_from_file(
     file: TextIO | str,
     identificatie: IdentificatieGegevens | List[IdentificatieGegevens],
     isrepresentatievan: VerwijzingGegevens | TextIO | str,
-    url: str | None = None,
     use_mimetype: bool = False,
 ) -> Bestand:
     """Convenience function for creating a Bestand object from a file.
@@ -165,7 +164,6 @@ def bestand_from_file(
           file containing an informatieobject, or a
           VerwijzingGegevens referencing an informatieobject.
           Used to construct the values for <isRepresentatieVan>.
-        url (Optional[str]): value of <URLBestand>
         use_mimetype (Optional[bool]): populate `<bestandsformaat>`
           with mimetype instead of pronom info
 
