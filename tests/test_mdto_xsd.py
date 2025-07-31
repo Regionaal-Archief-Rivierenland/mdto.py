@@ -36,7 +36,6 @@ def test_automatic_bestand_xml_validity(mdto_xsd, voorbeeld_archiefstuk_xml):
         example_file,
         IdentificatieGegevens("abcd-1234", "Corsa"),
         voorbeeld_archiefstuk_xml,
-        url="https://example.com/",
     )
 
     # see comment about lxml above

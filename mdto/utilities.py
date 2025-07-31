@@ -213,7 +213,7 @@ def bestand_from_file(
     file.close()
 
     return Bestand(
-        identificatie, naam, omvang, bestandsformaat, checksum, verwijzing_obj, url
+        identificatie, naam, omvang, bestandsformaat, checksum, verwijzing_obj
     )
 
 
