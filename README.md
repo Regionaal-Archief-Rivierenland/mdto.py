@@ -141,7 +141,6 @@ Informatieobject(naam='Verlenen kapvergunning Hooigracht 21 Den Haag',  identifi
 >
 > bestand = mdto.bestand_from_file(
 >         file="vergunning.pdf",  # bestand waarvoor technische metagegevens moeten worden aangemaakt
->         identificatie=Identificatiegegevens("34c5-4379-9f1a-5c378", "Proza (DMS)"),
 >         isrepresentatievan=obj_verwijzing
 >      )
 >

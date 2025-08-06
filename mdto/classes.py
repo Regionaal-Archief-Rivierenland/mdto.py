@@ -199,6 +199,11 @@ class IdentificatieGegevens(Serializable):
     identificatieKenmerk: str
     identificatieBron: str
 
+    @classmethod
+    def uuid(cls) -> Self:
+        """Create a IdentificatieGegevens containing a UUID4."""
+        return cls(str(uuid.uuid4()), "UUID4 via mdto.py")
+
 
 @dataclass
 class VerwijzingGegevens(Serializable):

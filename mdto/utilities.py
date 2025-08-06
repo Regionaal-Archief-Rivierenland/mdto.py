@@ -144,26 +144,25 @@ def _detect_verwijzing(informatieobject: TextIO | str) -> VerwijzingGegevens:
 
 def bestand_from_file(
     file: TextIO | str,
-    identificatie: IdentificatieGegevens | List[IdentificatieGegevens],
     isrepresentatievan: VerwijzingGegevens | TextIO | str,
+    identificatie: IdentificatieGegevens | List[IdentificatieGegevens] = None,
     use_mimetype: bool = False,
 ) -> Bestand:
     """Convenience function for creating a Bestand object from a file.
 
     This function differs from calling Bestand() directly in that it
     infers most technical information for you (checksum, PRONOM info,
-    etc.) by inspecting `file`. The value of <naam>, for example, is
-    always set to the basename of `file`.
-
+    etc.) by inspecting `file`. By default, `<identificatie>` is set
+    to a UUID.
 
     Args:
         file (TextIO | str): the file the Bestand object represents
-        identificatie (IdentificatieGegevens | List[IdentificatieGegevens]):
-          identificatiekenmerk of Bestand object
         isrepresentatievan (TextIO | str | VerwijzingGegevens): a XML
           file containing an informatieobject, or a
           VerwijzingGegevens referencing an informatieobject.
-          Used to construct the values for <isRepresentatieVan>.
+          Used to construct <isRepresentatieVan>.
+        identificatie (Optional[IdentificatieGegevens | List[IdentificatieGegevens]]):
+          Set `identificatie` explicitly instead of generating a UUID
         use_mimetype (Optional[bool]): populate `<bestandsformaat>`
           with mimetype instead of pronom info
 
@@ -173,7 +172,7 @@ def bestand_from_file(
      verwijzing_obj = VerwijzingGegevens("vergunning.mdto.xml")
      bestand = mdto.bestand_from_file(
           "vergunning.pdf",
-          IdentificatieGegevens('34c5-4379-9f1a-5c378', 'Proza (DMS)'),
+
           isrepresentatievan=verwijzing_obj  # or pass the actual file
      )
      bestand.save("vergunning.pdf.bestand.mdto.xml")
@@ -213,7 +212,12 @@ def bestand_from_file(
     file.close()
 
     return Bestand(
-        identificatie, naam, omvang, bestandsformaat, checksum, verwijzing_obj
+        identificatie if identificatie else IdentificatieGegevens.uuid(),
+        naam,
+        omvang,
+        bestandsformaat,
+        checksum,
+        verwijzing_obj,
     )
 
 
