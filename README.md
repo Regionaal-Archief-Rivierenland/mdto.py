@@ -102,7 +102,6 @@ waardering = BegripGegevens(begripLabel="Tijdelijk te bewaren",
                             begripBegrippenlijst=VerwijzingGegevens("Begrippenlijst Waarderingen MDTO"))
 
 # maak beperkingGebruik element
-# beperkingGebruikType verwacht een begrip label (bijv. 'Auteurswet'), en een verwijzing naar een begrippenlijst
 beperkingType = BegripGegevens("Auteurswet", VerwijzingGegevens("Gemeente Den Haag zaaksysteem begrippenlijst"))
 beperkingGebruik = BeperkingGebruikGegevens(beperkingGebruikType=beperkingType)
 
