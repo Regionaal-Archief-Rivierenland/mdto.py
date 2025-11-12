@@ -28,9 +28,8 @@ def load_tooi_register_gemeenten():
     """
     import importlib.resources # importing here improves helpers.py initialization speed
 
-    with importlib.resources.open_text(
-        "mdto.data", "rwc_gemeenten_compleet_4.json"
-    ) as f:
+    json_path = importlib.resources.files("mdto.data") / "rwc_gemeenten_compleet_4.json"
+    with json_path.open('r') as f:
         return json.load(f)
 
 
