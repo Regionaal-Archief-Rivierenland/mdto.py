@@ -71,12 +71,35 @@ def test_from_xml_bestand(voorbeeld_bestand_xml):
     )
 
 
-def test_automatic_bestand_generation(voorbeeld_bestand_xml):
-    """Test if automatic Bestand XML generation matches Voorbeeld Bestand.xml"""
-    # TODO: this needs to read the resource at
-    # <URLBestand>https://kia.pleio.nl/file/download/55815288/0090101KapvergunningHoogracht.pdf</URLBestand>
-    # but that link is dead (as all other links)
-    pass
+def test_automatic_bestand_generation(
+    voorbeeld_bestand_xml, voorbeeld_archiefstuk_xml, voorbeeld_pdf_file
+):
+    """
+    Test if generating a Bestand object from the file given in
+    URLBestand matches the Bestand object created by the NA.
+
+    Here, `voorbeeld_pdf_file` fullfills the role of the file in URLBestand.
+    """
+
+    # informatieobject that corresponds to Bestand
+    informatieobject = Informatieobject.from_xml(voorbeeld_archiefstuk_xml)
+    bestand = mdto.bestand_from_file(
+        voorbeeld_pdf_file,
+        informatieobject.verwijzing(),
+    )
+
+    # Bestand object to compare to
+    bestand_original = Bestand.from_xml(voorbeeld_bestand_xml)
+
+    # change date to date in original (there is no way to guess this)
+    bestand.checksum.checksumDatum = bestand_original.checksum.checksumDatum
+    # change identificatiekenmerk (there is no way to guess this, again)
+    bestand.identificatie = bestand_original.identificatie
+    # change URLBestand, if present (there is no way to guess this, again)
+    if bestand_original.URLBestand:
+        bestand.URLBestand = bestand_original.URLBestand
+
+    assert bestand_original == bestand
 
 
 def test_serialization_chain_informatieobject(voorbeeld_archiefstuk_xml):
