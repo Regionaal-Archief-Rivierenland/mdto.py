@@ -11,8 +11,8 @@
 <MDTO xmlns="https://www.nationaalarchief.nl/mdto" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://www.nationaalarchief.nl/mdto https://www.nationaalarchief.nl/mdto/MDTO-XML1.0.1.xsd">
     <bestand>
         <identificatie>
-            <identificatieKenmerk>Bestand-345c-4379</identificatieKenmerk>
-            <identificatieBron>Corsa</identificatieBron>
+            <identificatieKenmerk>547bffec-8fae-429…</identificatieKenmerk>
+            <identificatieBron>UUID4 via mdto.py</identificatieBron>
         </identificatie>
         <naam>bouwtekening-003.jpg</naam>
         <omvang>1089910</omvang>
@@ -33,13 +33,7 @@
             <checksumWaarde>857ee09fb53f647b16b1f96aba542ace454cd6fc52c9844d4ddb8218c5d61b6c</checksumWaarde>
             <checksumDatum>2024-02-15T16:15:33</checksumDatum>
         </checksum>
-        <URLBestand>https://www.example.com/bouwtekening-003.jpg</URLBestand>
-        <isRepresentatieVan>
-            <verwijzingNaam>Bouwtekening Flipje's erf 27</verwijzingNaam>
-            <verwijzingIdentificatie>
-                <identificatieKenmerk>Informatieobject-4661a-5a3526</identificatieKenmerk>
-                <identificatieBron>Corsa</identificatieBron>
-                ...
+        …
 ```
 
 Naast gebruiksvriendelijkheid, streeft `mdto.py` ook een 100% correcte implementatie van het MDTO XML-schema te zijn. Deze correctheid wordt geverifieerd door de output van `mdto.py` met de MDTO XSD en voorbeeldbestanden te vergelijken (zie [tests/](tests/)).
