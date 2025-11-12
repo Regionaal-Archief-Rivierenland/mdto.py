@@ -121,7 +121,7 @@ def test_file_saving(voorbeeld_archiefstuk_xml, tmp_path_factory):
     with open(outfile, "rb") as f:
         outfile_bytes = f.read()
 
-    # MDTO use double qoutes in the xml declaration, whereas lxml uses single quotes. Both are valid.
+    # MDTO uses double qoutes in the xml declaration, whereas lxml uses single quotes. Both are valid.
     # (couldn't find an easy way to change lxml's behavior here, unfortunately)
     outfile_bytes = outfile_bytes.replace(
         b"<?xml version='1.0' encoding='UTF-8'?>",
