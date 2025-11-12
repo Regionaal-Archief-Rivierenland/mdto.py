@@ -83,7 +83,7 @@ def mdto_xsd(pytestconfig, tmp_path_factory) -> Path:
         # store new location in pytest cache
         pytestconfig.cache.set("xsd/cache_path", str(cache_path))
 
-    return str(Path(cache_path) / xsd_filename)
+    return Path(cache_path) / xsd_filename
 
 
 @pytest.fixture
