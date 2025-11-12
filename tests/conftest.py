@@ -9,7 +9,7 @@ from mdto.gegevensgroepen import *
 
 xsd_filename = "MDTO-XML1.0.1.xsd"
 xsd_url = f"https://www.nationaalarchief.nl/mdto/{xsd_filename}"
-xml_url = "https://www.nationaalarchief.nl/sites/default/files/field-file/MDTO-XML%201.0.1%20Voorbeelden%20%283%29.zip"
+xml_url = "https://www.nationaalarchief.nl/sites/default/files/field-file/Documents.zip"
 
 # list of example files in the zip file
 prefix = "MDTO-XML 1.0.1 Voorbeeld "
@@ -64,6 +64,17 @@ def mdto_example_files(pytestconfig, tmp_path_factory) -> dict:
         for xml_file in xml_voorbeelden
         if (cache_path / xml_file).exists()
     }
+
+    # replace extraneous tab char in original
+    archiefstuk = cache_path / f"{prefix}Archiefstuk Informatieobject.xml"
+    with open(archiefstuk, "r+", encoding="utf-8") as f:
+        archiefstuk_xml = f.read()
+        archiefstuk_xml = archiefstuk_xml.replace(
+            "</aanvullendeMetagegevens>	", "</aanvullendeMetagegevens>"
+        )
+        f.seek(0)
+        f.write(archiefstuk_xml)
+        f.truncate()
 
     return xml_file_paths
 
