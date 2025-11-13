@@ -174,7 +174,7 @@ for bestand_path in Path(".").rglob("*.bestand.mdto.xml"):
     filepath = bestand_path.parent / filename
 
     # maak een nieuwe checksum
-    bestand.checksum = mdto.create_checksum(filepath)
+    bestand.checksum = ChecksumGegegevens.from_file(filepath)
 
     # schrijf geüpdatet Bestand object terug naar de oorspronkelijke XML file
     bestand.save(bestand_path)
