@@ -1,5 +1,7 @@
 import dataclasses
 import uuid
+import hashlib
+from datetime import datetime
 from dataclasses import Field, dataclass
 from typing import Any, List, Self, TextIO, Type, TypeVar, Union, get_args, get_origin
 
@@ -306,8 +308,16 @@ class ChecksumGegevens(Serializable):
 
     Note:
         When building Bestand objects, it's recommended to call the convience
-        function `bestand_from_file()` instead.  And if you just need to update
-        a Bestand's checksum, you should use `create_checksum()`.
+        function `bestand_from_file()` instead. To just compute a new checksum for a given file,
+        see `ChecksumGegevens.from_file(...)`.
+
+    Example:
+
+        ```python
+        bestand = Bestand.generate(...)
+        # assign a new checksum
+        bestand.checksum = Checksum.from_file("foo.txt")
+        ```
 
     Args:
         checksumAlgoritme (BegripGegevens): Naam van het algoritme dat is gebruikt om de checksum te maken
@@ -328,6 +338,47 @@ class ChecksumGegevens(Serializable):
                 self.checksumDatum,
                 ["%Y-%m-%dT%H:%M:%S"],
             )
+
+    @classmethod
+    def from_file(cls, file_or_filename: TextIO | str, algorithm: str = "sha256") -> Self:
+        """Convience function for creating ChecksumGegegevens objects.
+
+        Takes a file-like object or path to file, and then computes the requisite
+        checksum metadata (i.e.  `checksumAlgoritme`, `checksumWaarde`, and
+        `checksumDatum`) from that file.
+
+        Example:
+
+            ```python
+            pdf_checksum = ChecksumGegevens.from_file('document.pdf')
+            # create ChecksumGegevens with a 512 bits instead of a 256 bits checksum
+            jpg_checksum = ChecksumGegevens.from_file('scan-003.jpg', algorithm="sha512")
+            ```
+
+        Args:
+            file_or_filename (TextIO | str): file-like object to generate checksum data for
+            algorithm (Optional[str]): checksum algorithm to use; defaults to sha256.
+             For valid values, see https://docs.python.org/3/library/hashlib.html
+
+        Returns:
+            ChecksumGegevens: checksum metadata for `file_or_filename`
+        """
+        infile = helpers.process_file(file_or_filename)
+
+        verwijzingBegrippenlijst = VerwijzingGegevens(
+            verwijzingNaam="Begrippenlijst ChecksumAlgoritme MDTO"
+        )
+
+        checksumAlgoritme = BegripGegevens(
+            begripLabel=algorithm.upper(), begripBegrippenlijst=verwijzingBegrippenlijst
+        )
+
+        # file_digest() expects a file in binary mode, hence `infile.buffer.raw`
+        checksumWaarde = hashlib.file_digest(infile.buffer.raw, algorithm).hexdigest()
+
+        checksumDatum = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+
+        return cls(checksumAlgoritme, checksumWaarde, checksumDatum)
 
 
 @dataclass

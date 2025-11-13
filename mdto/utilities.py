@@ -1,7 +1,5 @@
-import hashlib
 import os
 import re
-from datetime import datetime
 from pathlib import Path
 from typing import List, TextIO, Type, Any
 import mimetypes
@@ -317,45 +315,3 @@ def verwijzing_gegevens_from_tooi_gemeentecode(gemeentecode: str) -> VerwijzingG
         f"Code '{gemeentecode}' not found in 'TOOI register gemeenten compleet'. "
         "For a list of possible values, see https://identifier.overheid.nl/tooi/set/rwc_gemeenten_compleet"
     )
-
-
-def create_checksum(
-    file_or_filename: TextIO | str, algorithm: str = "sha256"
-) -> ChecksumGegevens:
-    """Convience function for creating ChecksumGegegevens objects.
-
-    Takes a file-like object or path to file, and then generates the requisite
-    checksum metadata (i.e.  `checksumAlgoritme`, `checksumWaarde`, and
-    `checksumDatum`) from that file.
-
-    Example:
-
-        ```python
-        pdf_checksum = create_checksum('document.pdf')
-        # create ChecksumGegevens with a 512 bits instead of a 256 bits checksum
-        jpg_checksum = create_checksum('scan-003.jpg', algorithm="sha512")
-        ```
-
-    Args:
-        infile (TextIO | str): file-like object to generate checksum data for
-        algorithm (Optional[str]): checksum algorithm to use; defaults to sha256.
-         For valid values, see https://docs.python.org/3/library/hashlib.html
-
-    Returns:
-        ChecksumGegevens: checksum metadata from `file_or_filename`
-    """
-    infile = helpers.process_file(file_or_filename)
-    verwijzingBegrippenlijst = VerwijzingGegevens(
-        verwijzingNaam="Begrippenlijst ChecksumAlgoritme MDTO"
-    )
-
-    checksumAlgoritme = BegripGegevens(
-        begripLabel=algorithm.upper(), begripBegrippenlijst=verwijzingBegrippenlijst
-    )
-
-    # file_digest() expects a file in binary mode, hence `infile.buffer.raw`
-    checksumWaarde = hashlib.file_digest(infile.buffer.raw, algorithm).hexdigest()
-
-    checksumDatum = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-
-    return ChecksumGegevens(checksumAlgoritme, checksumWaarde, checksumDatum)
