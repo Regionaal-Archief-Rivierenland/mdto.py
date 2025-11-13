@@ -524,7 +524,7 @@ class Object(Serializable):
         super().validate()
         if len(self.naam) > MDTO_MAX_NAAM_LENGTH:
             helpers.logging.warning(
-                f"{self.__class__.__name__}.naam: {self.naam} exceeds recommended length of {MDTO_MAX_NAAM_LENGTH}"
+                f"{self.__class__.__name__}.naam: '{self.naam}' exceeds recommended length of {MDTO_MAX_NAAM_LENGTH}"
             )
 
     def save(
