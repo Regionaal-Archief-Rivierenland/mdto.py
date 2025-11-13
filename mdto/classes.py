@@ -1,6 +1,6 @@
 import dataclasses
-from dataclasses import dataclass, Field
 import uuid
+from dataclasses import Field, dataclass
 from typing import Any, List, Self, TextIO, Type, TypeVar, Union, get_args, get_origin
 
 import lxml.etree as ET
