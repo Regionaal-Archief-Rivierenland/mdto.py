@@ -1,7 +1,7 @@
 import os
 import re
 from pathlib import Path
-from typing import List, TextIO, Type, Any
+from typing import List, TextIO
 import mimetypes
 
 import lxml.etree as ET
@@ -139,7 +139,7 @@ def _detect_verwijzing(informatieobject: TextIO | str) -> VerwijzingGegevens:
 
     return VerwijzingGegevens(naam.text, identificatie)
 
-
+# todo: i think the identificatie parameter should be removed; we also don't have one for URL
 def bestand_from_file(
     file: TextIO | str,
     isrepresentatievan: VerwijzingGegevens | TextIO | str,
@@ -233,6 +233,9 @@ def verwijzing_gegevens_from_tooi_gemeentenaam(gemeentenaam: str) -> VerwijzingG
        >>> print(archiefvormer.verwijzingIdentificatie.identificatieKenmerk)
        gm0218
        ```
+
+    Raises:
+        ...
 
     Args:
        gemeentenaam: The name of the municipality. May be prefixed with "Gemeente".
