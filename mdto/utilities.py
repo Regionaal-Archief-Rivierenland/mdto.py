@@ -190,7 +190,7 @@ def bestand_from_file(
     else:
         bestandsformaat = mimetypeinfo(file.name)
 
-    checksum = create_checksum(file)
+    checksum = ChecksumGegevens.from_file(file)
 
     # file or file path?
     if isinstance(isrepresentatievan, (str, Path)) or hasattr(
