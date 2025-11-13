@@ -143,14 +143,13 @@ def _detect_verwijzing(informatieobject: TextIO | str) -> VerwijzingGegevens:
 def bestand_from_file(
     file: TextIO | str,
     isrepresentatievan: VerwijzingGegevens | TextIO | str,
-    identificatie: IdentificatieGegevens | List[IdentificatieGegevens] = None,
     use_mimetype: bool = False,
 ) -> Bestand:
     """Convenience function for creating a Bestand object from a file.
 
     This function differs from calling Bestand() directly in that it
     infers most technical information for you (checksum, PRONOM info,
-    etc.) by inspecting `file`. By default, `<identificatie>` is set
+    etc.) by inspecting `file`. `<identificatie>` is set
     to a UUID.
 
     Args:
@@ -159,8 +158,6 @@ def bestand_from_file(
           file containing an informatieobject, or a
           VerwijzingGegevens referencing an informatieobject.
           Used to construct <isRepresentatieVan>.
-        identificatie (Optional[IdentificatieGegevens | List[IdentificatieGegevens]]):
-          Set `identificatie` explicitly instead of generating a UUID
         use_mimetype (Optional[bool]): populate `<bestandsformaat>`
           with mimetype instead of pronom info
 
@@ -210,7 +207,7 @@ def bestand_from_file(
     file.close()
 
     return Bestand(
-        identificatie if identificatie else IdentificatieGegevens.uuid(),
+        IdentificatieGegevens.uuid(),
         naam,
         omvang,
         bestandsformaat,
