@@ -202,7 +202,16 @@ class IdentificatieGegevens(Serializable):
 
     @classmethod
     def uuid(cls) -> Self:
-        """Create a IdentificatieGegevens containing a UUID4."""
+        """Create a IdentificatieGegevens containing a UUID4.
+
+        Example:
+            ```python
+            >>> informatieobject.identificatie = IdentificatieGegevens.uuid()
+            >>> print(informatieobject.identificatie)
+            IdentificatieGegevens(identificatieKenmerk='4254ae31-7ac128f…',
+                                  identificatieBron='UUID4 via mdto.py')
+            ```
+        """
         return cls(str(uuid.uuid4()), "UUID4 via mdto.py")
 
 
