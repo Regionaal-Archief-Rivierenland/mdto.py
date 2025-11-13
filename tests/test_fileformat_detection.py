@@ -24,3 +24,15 @@ def test_mimetype(voorbeeld_archiefstuk_xml):
         got.begripCode = "application/xml"
 
     assert expected == got
+
+# TODO: find out why siegfried won't recognize these
+def test_mimetype_py():
+    """Test mimetype detection for python files.
+
+    These are esotoric/non-IANA recognized, and thus deserve a seperate test"""
+    expected = BegripGegevens(
+        "x-python", VerwijzingGegevens("IANA Media types"), "text/x-python"
+    )
+    got = mimetypeinfo(__file__)
+
+    assert expected == got
