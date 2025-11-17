@@ -264,9 +264,9 @@ class TermijnGegevens(Serializable):
 
     Args:
         termijnTriggerStartLooptijd (Optional[BegripGegevens]): Gebeurtenis waarna de looptijd van de termijn start
-        termijnStartdatumLooptijd (Optional[str]): Datum waarop de looptijd is gestart
-        termijnLooptijd (Optional[str]): Hoeveelheid tijd waarin de termijnEindDatum bereikt wordt
-        termijnEinddatum (Optional[str]): Datum waarop de termijn eindigt
+        termijnStartdatumLooptijd (Optional[str]): Datum waarop de looptijd is gestart, in `YYYY-MM-DD` formaat
+        termijnLooptijd (Optional[str]): Hoeveelheid tijd waarin de termijnEindDatum bereikt wordt, bijv. `P20Y`
+        termijnEinddatum (Optional[str]): Datum waarop de termijn eindigt, bijv. `2029-10-10`
     """
 
     termijnTriggerStartLooptijd: BegripGegevens = None
