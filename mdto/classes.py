@@ -479,7 +479,8 @@ class RaadpleeglocatieGegevens(Serializable):
         urls = (
             [self.raadpleeglocatieOnline]
             if isinstance(self.raadpleeglocatieOnline, str)
-            else self.raadpleeglocatieOnline or [] # handle raadpleeglocatieOnline is None
+            else self.raadpleeglocatieOnline
+            or []  # handle raadpleeglocatieOnline is None
         )
 
         for u in urls:
