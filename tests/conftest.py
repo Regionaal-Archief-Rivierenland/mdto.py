@@ -39,8 +39,8 @@ def download_mdto_xsd(target_dir):
     response.raise_for_status()  # raise error if download failed
 
     # should be response.text and open(file, "w"), but NA is sending incorrect header information
-    with open(target_dir / xsd_filename, "w") as f:
-        f.write(response.text)
+    with open(target_dir / xsd_filename, "wb") as f:
+        f.write(response.content)
 
 
 def download_example_pdf(target_dir):
