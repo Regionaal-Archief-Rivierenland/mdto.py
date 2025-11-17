@@ -26,6 +26,7 @@ def test_mimetype(voorbeeld_archiefstuk_xml):
     assert expected == got
 
 # TODO: find out why siegfried won't recognize these
+# maybe this should be a little more relaxed; x-python is non-standard
 def test_mimetype_py():
     """Test mimetype detection for python files.
 
