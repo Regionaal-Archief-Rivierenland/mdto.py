@@ -139,7 +139,6 @@ def _detect_verwijzing(informatieobject: TextIO | str) -> VerwijzingGegevens:
 
     return VerwijzingGegevens(naam.text, identificatie)
 
-# todo: i think the identificatie parameter should be removed; we also don't have one for URL
 def bestand_from_file(
     file: TextIO | str,
     isrepresentatievan: VerwijzingGegevens | TextIO | str,
