@@ -33,13 +33,14 @@ class DateValidationError(ValidationError):
     """Custom formatter for MDTO date(time) validation errors"""
 
     def __init__(self, field_path: list[str], date: str, fmts: list[str]):
+        fmts.sort()
         # Format bullet list
-        supported_fmts = "\n".join(f"\t• {fmt}" for fmt in fmts)
+        supported_fmts = "\n".join(f"  • {fmt}" for fmt in fmts)
         field_name = field_path[-1]
         msg = (
             f"Date '{date}' is incorrectly formatted or non-existent; {field_name} supports:\n\n"
             f"{supported_fmts}\n\n"
-            "\tEach format may include timezone info, e.g. '+01:00' or 'Z'"
+            "  Each format may include timezone info, e.g. '+01:00' or 'Z'"
         )
         super().__init__(field_path, msg)
 
