@@ -37,7 +37,7 @@ class DateValidationError(ValidationError):
         supported_fmts = "\n".join(f"\t• {fmt}" for fmt in fmts)
         field_name = field_path[-1]
         msg = (
-            f"Date '{value}' is incorrectly formatted or non-existent; {field_name} supports:\n\n"
+            f"Date '{date}' is incorrectly formatted or non-existent; {field_name} supports:\n\n"
             f"{supported_fmts}\n\n"
             "\tEach format may include timezone info, e.g. '+01:00' or 'Z'"
         )
