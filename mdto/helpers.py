@@ -25,11 +25,11 @@ def load_tooi_register_gemeenten():
 
     Makes a big difference in performance.
     """
-    import importlib.resources # importing here improves helpers.py initialization speed
+    import importlib.resources  # importing here improves helpers.py initialization speed
     import json
 
     json_path = importlib.resources.files("mdto.data") / "rwc_gemeenten_compleet_4.json"
-    with json_path.open('r') as f:
+    with json_path.open("r") as f:
         return json.load(f)
 
 
