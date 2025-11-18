@@ -341,7 +341,9 @@ class ChecksumGegevens(Serializable):
             )
 
     @classmethod
-    def from_file(cls, file_or_filename: TextIO | str, algorithm: str = "sha256") -> Self:
+    def from_file(
+        cls, file_or_filename: TextIO | str, algorithm: str = "sha256"
+    ) -> Self:
         """Convience function for creating ChecksumGegegevens objects.
 
         Takes a file-like object or path to file, and then computes the requisite
