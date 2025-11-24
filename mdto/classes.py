@@ -185,7 +185,7 @@ class Serializable:
     def _from_elem(cls, elem: ET.Element):
         """Private helper method stub.
 
-        Used within from_xml() to construct a gegevensgroep from an ET.Element.
+        Used within open() to construct a gegevensgroep from an ET.Element.
         This stub is dynamically implemented at runtime.
         """
         pass
@@ -533,7 +533,7 @@ class Object(Serializable):
     This class serves as the parent class to Informatieobject and
     Bestand. There is no reason to use it directly.
 
-    MDTO objects that derive from this class inherit a from_xml() and
+    MDTO objects that derive from this class inherit a open() and
     save() method, which can be used to read/write these objects
     to/from XML files.
     """
@@ -626,14 +626,14 @@ class Object(Serializable):
         xml.write(file_or_filename, **lxml_args)
 
     @classmethod
-    def from_xml(cls: Type[ObjectT], mdto_xml: TextIO | str) -> ObjectT:
+    def open(cls: Type[ObjectT], mdto_xml: TextIO | str) -> ObjectT:
         """Construct a Informatieobject/Bestand object from a MDTO XML file.
 
         Example:
 
         ```python
         # read informatieobject from file
-        archiefstuk = Informatieobject.from_xml("Voorbeeld Archiefstuk Informatieobject.xml")
+        archiefstuk = Informatieobject.open("Voorbeeld Archiefstuk Informatieobject.xml")
 
         # edit the informatieobject
         archiefstuk.naam = "Verlenen kapvergunning Flipje's Erf 15 Tiel"
@@ -902,7 +902,7 @@ def _construct_deserialization_classmethods():
     of `Serializable`.
 
     This constructor executes on module import, and creates helpers
-    for the public `from_xml()` classmethods of Informatieobject and
+    for the public `open()` classmethods of Informatieobject and
     Bestand.
     """
 

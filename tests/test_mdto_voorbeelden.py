@@ -15,10 +15,10 @@ def serialization_chain(xmlfile: str) -> str:
         str: the re-serailized XML, as a string
     """
     # Deserialize
-    object = mdto.Object.from_xml(xmlfile)
+    informatieobject_of_bestand = mdto.open(xmlfile)
 
     # Serialize back to XML
-    output_tree = object.to_xml()
+    output_tree = informatieobject_of_bestand.to_xml()
 
     return (
         ET.tostring(
@@ -32,7 +32,7 @@ def serialization_chain(xmlfile: str) -> str:
 
 def test_from_xml_archiefstuk(voorbeeld_archiefstuk_xml):
     """Test that from_xml() correctly parses Voorbeeld Archiefstuk Informatieobject.xml"""
-    archiefstuk = Informatieobject.from_xml(voorbeeld_archiefstuk_xml)
+    archiefstuk = Informatieobject.open(voorbeeld_archiefstuk_xml)
 
     assert isinstance(archiefstuk, Informatieobject)
     assert (
@@ -43,7 +43,7 @@ def test_from_xml_archiefstuk(voorbeeld_archiefstuk_xml):
 
 def test_from_xml_dossier(voorbeeld_dossier_xml):
     """Test that from_xml() correctly parses Voorbeeld Dossier Informatieobject.xml"""
-    dossier = Informatieobject.from_xml(voorbeeld_dossier_xml)
+    dossier = Informatieobject.open(voorbeeld_dossier_xml)
 
     assert isinstance(dossier, Informatieobject)
     assert dossier.trefwoord == "Noordzee"
@@ -51,7 +51,7 @@ def test_from_xml_dossier(voorbeeld_dossier_xml):
 
 def test_from_xml_serie(voorbeeld_serie_xml):
     """Test that from_xml() correctly parses Voorbeeld Serie Informatieobject.xml"""
-    serie = Informatieobject.from_xml(voorbeeld_serie_xml)
+    serie = Informatieobject.open(voorbeeld_serie_xml)
 
     assert isinstance(serie, Informatieobject)
     assert (
@@ -62,7 +62,7 @@ def test_from_xml_serie(voorbeeld_serie_xml):
 
 def test_from_xml_bestand(voorbeeld_bestand_xml):
     """Test that from_xml() correctly parses Voorbeeld Bestand.xml"""
-    bestand = Bestand.from_xml(voorbeeld_bestand_xml)
+    bestand = Bestand.open(voorbeeld_bestand_xml)
 
     assert isinstance(bestand, Bestand)
     assert (
@@ -82,14 +82,14 @@ def test_automatic_bestand_generation(
     """
 
     # informatieobject that corresponds to Bestand
-    informatieobject = Informatieobject.from_xml(voorbeeld_archiefstuk_xml)
+    informatieobject = Informatieobject.open(voorbeeld_archiefstuk_xml)
     bestand = mdto.bestand_from_file(
         voorbeeld_pdf_file,
         informatieobject.verwijzing(),
     )
 
     # Bestand object to compare to
-    bestand_original = Bestand.from_xml(voorbeeld_bestand_xml)
+    bestand_original = Bestand.open(voorbeeld_bestand_xml)
 
     # change date to date in original (there is no way to guess this)
     bestand.checksum.checksumDatum = bestand_original.checksum.checksumDatum
@@ -132,7 +132,7 @@ def test_file_saving(voorbeeld_archiefstuk_xml, tmp_path_factory):
     tmpdir = tmp_path_factory.mktemp("Output")
     outfile = tmpdir / "test archiefstuk.xml"
 
-    informatieobject = Informatieobject.from_xml(voorbeeld_archiefstuk_xml)
+    informatieobject = Informatieobject.open(voorbeeld_archiefstuk_xml)
     informatieobject.save(outfile)
 
     # MDTO uses CRLF (DOS) line endings. Convert them to UNIX line endings.

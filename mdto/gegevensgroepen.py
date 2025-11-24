@@ -12,6 +12,7 @@ from .classes import (
     BetrokkeneGegevens,
     Informatieobject,
     Bestand,
+    Object,
 )
 
 # Expose public classes
@@ -29,4 +30,5 @@ __all__ = [
     "BetrokkeneGegevens",
     "Informatieobject",
     "Bestand",
+    "Object",
 ]
