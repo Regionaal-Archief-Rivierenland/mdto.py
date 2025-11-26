@@ -126,7 +126,7 @@ class Serializable:
                 if field_value is None or len(str(field_value)) == 0:
                     raise _ValidationError("field value must not be empty or None")
 
-    def _mdto_ordered_fields(self) -> List[Field]:
+    def _mdto_ordered_fields(self) -> list[Field]:
         """Sort dataclass fields by their order in the MDTO XSD.
 
         This method should be overridden when the order of fields in
@@ -257,7 +257,7 @@ class BegripGegevens(Serializable):
     begripBegrippenlijst: VerwijzingGegevens
     begripCode: str = None
 
-    def _mdto_ordered_fields(self) -> List[Field]:
+    def _mdto_ordered_fields(self) -> list[Field]:
         """Sort dataclass fields by their order in the MDTO XSD."""
         fields = super()._mdto_ordered_fields()
         # swap order of begripBegrippenlijst and begripCode
