@@ -25,7 +25,7 @@ ObjectT = TypeVar("ObjectT", bound="Object")
 class ValidationError(TypeError):
     """Custom formatter for MDTO validation errors"""
 
-    def __init__(self, field_path: List[str], msg: str):
+    def __init__(self, field_path: list[str], msg: str):
         super().__init__(f"{'.'.join(field_path)}:\n  {msg}")
         self.field_path = field_path
         self.msg = msg
