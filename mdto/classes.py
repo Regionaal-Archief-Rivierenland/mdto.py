@@ -214,6 +214,9 @@ class IdentificatieGegevens(Serializable):
             IdentificatieGegevens(identificatieKenmerk='4254ae31-7ac128f…',
                                   identificatieBron='UUID4 via mdto.py')
             ```
+
+        Returns:
+            IdentificatieGegevens: IdentificatieGegevens containing a UUID4
         """
         return cls(str(uuid.uuid4()), "UUID4 via mdto.py")
 
