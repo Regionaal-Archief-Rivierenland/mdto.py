@@ -1,12 +1,25 @@
 # Private helper methods
 
+# enables annotations from mdto.gegevensgroepen without creating a circular import
+from __future__ import annotations
+
 import logging
+import mimetypes
 import re
 from datetime import datetime
 from functools import lru_cache
 from pathlib import Path
-from typing import List, Tuple, TextIO
+from typing import TYPE_CHECKING, TextIO, Tuple
 
+import lxml.etree as ET
+
+# satisfy type checkers
+if TYPE_CHECKING:
+    from mdto.gegevensgroepen import (
+        BegripGegevens,
+        IdentificatieGegevens,
+        VerwijzingGegevens,
+    )
 
 # setup logging
 logging.basicConfig(
@@ -58,6 +71,136 @@ def process_file(file_or_filename: TextIO | str) -> TextIO:
         raise TypeError(
             f"Expected file object or str, but got value of type {type(file_or_filename)}"
         )
+
+
+def pronominfo(file: str | Path) -> BegripGegevens:
+    """Generate PRONOM information about `file`. This information can be used in
+    a Bestand's `<bestandsformaat>` tag.
+
+    Args:
+        file (str | Path): Path to the file to inspect
+
+    Raises:
+        RuntimeError: siegfried failed to detect PRONOM info
+
+    Returns:
+        BegripGegevens: Object with the following properties:
+          - `begripLabel`: The file's PRONOM signature name
+          - `begripCode`: The file's PRONOM ID
+          - `begripBegrippenLijst`: A reference to the PRONOM registry
+    """
+    import pygfried  # import here for performance
+
+    from mdto.gegevensgroepen import BegripGegevens, VerwijzingGegevens
+
+    # we only care about the first file
+    prinfo = pygfried.identify(str(file), detailed=True)["files"][0]
+
+    err = prinfo["errors"]
+    if err:
+        if "empty" in err:
+            logging.warning(f"{file} appears to be an empty file")
+        elif "no such file or directory" in err:
+            # this specific message only occurs for files
+            raise FileNotFoundError(f"{file}: no such file")
+        else:
+            # just pass on the error
+            raise RuntimeError(err)
+
+    # extract match
+    matches = prinfo["matches"]
+    if len(matches) > 1:
+        logging.warning(
+            "siegfried returned more than one PRONOM match "
+            f"for {file}. Selecting the first one."
+        )
+
+    match = matches[0]
+    # check if a match was found (matches is non-empty even if no match is found)
+    if match["id"] == "UNKNOWN":
+        raise RuntimeError(
+            f"siegfried failed to detect PRONOM information about {file}"
+        )
+
+    # log siegfried's warnings (such as extension mismatches)
+    warning = match["warning"]
+    if warning:
+        logging.warning(f"siegfried reports PRONOM warning about {file}: {warning}")
+
+    return BegripGegevens(
+        begripLabel=match["format"],
+        begripCode=match["id"],
+        begripBegrippenlijst=VerwijzingGegevens("PRONOM-register"),
+    )
+
+
+def mimetypeinfo(file: str | Path) -> BegripGegevens:
+    """Generate MIME type information about `file`. This information can be used in
+    a Bestand's `<bestandsformaat>` tag.
+
+    Args:
+        file (str | Path): Path to the file to inspect
+
+    Returns:
+        BegripGegevens: Object with the following properties:
+          - `begripLabel`: The file's MIME subtype
+          - `begripCode`: The file's MIME type (top-level type + subtype)
+          - `begripBegrippenLijst`: A reference to the IANA registry
+    """
+    from mdto.gegevensgroepen import BegripGegevens, VerwijzingGegevens
+
+    # strict means: use only mimetypes registered with the IANA
+    # this should be .guess_file_type when py3.13 releases
+    mimetype, _ = mimetypes.guess_type(file, strict=True)
+
+    if mimetype is None:
+        raise RuntimeError(f"failed to detect MIME type information about {file}")
+
+    _, subtype = mimetype.split("/")
+
+    return BegripGegevens(subtype, VerwijzingGegevens("IANA Media types"), mimetype)
+
+
+def detect_verwijzing(informatieobject: TextIO | str) -> VerwijzingGegevens:
+    """A Bestand object must contain a reference to a corresponding
+    informatieobject.  Specifically, it expects an <isRepresentatieVan> tag with
+    the following children:
+
+    1. <verwijzingNaam>: name of the informatieobject
+    2. <verwijzingIdentificatie> (optional): reference to the informatieobject's
+    ID and source thereof
+
+    This function infers these so-called 'VerwijzingGegevens' by parsing the XML
+    of the file `informatieobject`.
+
+    Args:
+        informatieobject (TextIO | str): XML file to infer VerwijzingGegevens from
+
+    Returns:
+        VerwijzingGegevens: reference to the informatieobject specified by `informatieobject`
+    """
+    from mdto.gegevensgroepen import VerwijzingGegevens, IdentificatieGegevens
+
+    id_gegevens = None
+    namespaces = {"mdto": "https://www.nationaalarchief.nl/mdto"}
+    tree = ET.parse(informatieobject)
+    root = tree.getroot()
+
+    id_xpath = ".//mdto:informatieobject/mdto:identificatie/"
+
+    kenmerk = root.find(f"{id_xpath}mdto:identificatieKenmerk", namespaces=namespaces)
+    bron = root.find(f"{id_xpath}mdto:identificatieBron", namespaces=namespaces)
+    naam = root.find(".//mdto:informatieobject/mdto:naam", namespaces=namespaces)
+
+    if None in [kenmerk, bron]:
+        raise ValueError(f"Failed to detect <identificatie> in {informatieobject}")
+
+    identificatie = IdentificatieGegevens(kenmerk.text, bron.text)
+
+    if naam is None:
+        raise ValueError(f"Failed to detect <naam> in {informatieobject}")
+
+    return VerwijzingGegevens(naam.text, identificatie)
 
 
 def valid_url(url: str) -> bool:

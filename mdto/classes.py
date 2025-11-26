@@ -1,6 +1,8 @@
+import os
 import dataclasses
 import uuid
 import hashlib
+from pathlib import Path
 from datetime import datetime
 from dataclasses import Field, dataclass
 from typing import Any, List, Self, TextIO, Type, TypeVar, Union, get_args, get_origin
@@ -312,7 +314,7 @@ class ChecksumGegevens(Serializable):
 
     Note:
         When building Bestand objects, it's recommended to call the convience
-        function `bestand_from_file()` instead. To just compute a new checksum for a given file,
+        function `Bestand.from_file()` instead. To simply compute a new checksum of a given file,
         see `ChecksumGegevens.from_file(...)`.
 
     Example:
@@ -671,7 +673,6 @@ class Object(Serializable):
         root = tree.getroot()
         children = list(root[0])
 
-
         # check if object type matches informatieobject/bestand
         object_type = root[0].tag.removeprefix("{https://www.nationaalarchief.nl/mdto}")
 
@@ -845,8 +846,8 @@ class Bestand(Object, Serializable):
     """https://nationaalarchief.nl/archiveren/mdto/bestand
 
     Note:
-        When creating Bestand objects, it's easier to use the
-        `bestand_from_file()` convenience function instead.
+        When creating Bestand objects, it's *almost always* easier to use the
+        `Bestand.from_file()` class method instead.
 
     Args:
         identificatie (IdentificatieGegevens | List[IdentificatieGegevens]): Identificatiekenmerk
@@ -897,6 +898,86 @@ class Bestand(Object, Serializable):
                 ["Bestand", "URLBestand"],
                 f"url {self.URLBestand} is malformed",
             )
+
+    @classmethod
+    def from_file(
+        cls,
+        file: TextIO | str,
+        isrepresentatievan: VerwijzingGegevens | TextIO | str,
+        use_mimetype: bool = False,
+    ) -> Self:
+        """Convenience function for creating a Bestand object from a file, such
+        as a PDF.
+
+        This function differs from calling Bestand() directly in that it
+        *infers* most information for you (checksum, PRONOM info, etc.) by
+        inspecting `file`. `<identificatie>` is set to a UUID.
+
+        Args:
+            file (TextIO | str): the file the Bestand object represents
+            isrepresentatievan (TextIO | str | VerwijzingGegevens): a XML
+              file containing an informatieobject, or a
+              VerwijzingGegevens referencing an informatieobject.
+              Used to construct <isRepresentatieVan>.
+            use_mimetype (Optional[bool]): populate `<bestandsformaat>`
+              with mimetype instead of pronom info
+
+        Example:
+          ```python
+
+         verwijzing_obj = VerwijzingGegevens("vergunning.mdto.xml")
+         bestand = Bestand.from_file(
+              "vergunning.pdf",
+              isrepresentatievan=verwijzing_obj  # or pass the actual file
+         )
+
+         # change identificatiekenmerk, if desired (defaults to a UUID)
+         bestand.identificatie = ...
+
+         bestand.save("vergunning.pdf.bestand.mdto.xml")
+         ```
+
+        Returns:
+            Bestand: new Bestand object
+        """
+        file = helpers.process_file(file)
+
+        # set <naam> to basename
+        naam = os.path.basename(file.name)
+        omvang = os.path.getsize(file.name)
+        checksum = ChecksumGegevens.from_file(file)
+
+        if not use_mimetype:
+            bestandsformaat = helpers.pronominfo(file.name)
+        else:
+            bestandsformaat = helpers.mimetypeinfo(file.name)
+
+
+        # file or file path?
+        if isinstance(isrepresentatievan, (str, Path)) or hasattr(
+            isrepresentatievan, "read"
+        ):
+            informatieobject_file = helpers.process_file(isrepresentatievan)
+            # Construct verwijzing from informatieobject file
+            verwijzing_obj = helpers.detect_verwijzing(informatieobject_file)
+            informatieobject_file.close()
+        elif isinstance(isrepresentatievan, VerwijzingGegevens):
+            verwijzing_obj = isrepresentatievan
+        else:
+            raise TypeError(
+                "isrepresentatievan must either be a path, file, or a VerwijzingGegevens object."
+            )
+
+        file.close()
+
+        return cls(
+            IdentificatieGegevens.uuid(),
+            naam,
+            omvang,
+            bestandsformaat,
+            checksum,
+            verwijzing_obj,
+        )
 
 
 def _construct_deserialization_classmethods():

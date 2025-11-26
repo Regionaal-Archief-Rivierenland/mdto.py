@@ -1,7 +1,7 @@
 import pytest
 
 from mdto.gegevensgroepen import *
-from mdto.utilities import _pronominfo_siegfried, mimetypeinfo
+from mdto.helpers import pronominfo, mimetypeinfo
 
 
 def test_pronom_siegfried(voorbeeld_archiefstuk_xml):
@@ -9,7 +9,7 @@ def test_pronom_siegfried(voorbeeld_archiefstuk_xml):
     expected = BegripGegevens(
         "Extensible Markup Language", VerwijzingGegevens("PRONOM-register"), "fmt/101"
     )
-    got = _pronominfo_siegfried(voorbeeld_archiefstuk_xml)
+    got = pronominfo(voorbeeld_archiefstuk_xml)
     assert expected == got
 
 

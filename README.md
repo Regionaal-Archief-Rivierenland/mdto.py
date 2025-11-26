@@ -123,7 +123,7 @@ Informatieobject(naam='Verlenen kapvergunning Hooigracht 21 Den Haag',  identifi
 ```
 
 > [!TIP]
-> Je kan op een vergelijkbare manier Bestand objecten bouwen via de `Bestand()` class. Het is vaak echter simpeler om hiervoor de _convience_ functie `bestand_from_file()` te gebruiken, omdat deze veel gegevens, zoals PRONOM informatie en checksums, automatisch voor je aanmaakt:
+> Je kan op een vergelijkbare manier Bestand objecten bouwen via de `Bestand()` class. Het is vaak echter simpeler om hiervoor de _convience_ functie `Bestand.from_file()` te gebruiken, omdat deze veel gegevens, zoals PRONOM informatie en checksums, automatisch voor je aanmaakt:
 >
 > ```python
 > import mdto
@@ -132,7 +132,7 @@ Informatieobject(naam='Verlenen kapvergunning Hooigracht 21 Den Haag',  identifi
 > # verwijzing naar bijbehorend informatieobject
 > obj_verwijzing = VerwijzingGegevens("Verlenen kapvergunning Hooigracht")
 >
-> bestand = mdto.bestand_from_file(
+> bestand = Bestand.from_file(
 >         file="vergunning.pdf",  # bestand waarvoor technische metagegevens moeten worden aangemaakt
 >         isrepresentatievan=obj_verwijzing
 >      )

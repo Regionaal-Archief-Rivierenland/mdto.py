@@ -83,7 +83,7 @@ def test_automatic_bestand_generation(
 
     # informatieobject that corresponds to Bestand
     informatieobject = Informatieobject.open(voorbeeld_archiefstuk_xml)
-    bestand = mdto.bestand_from_file(
+    bestand = Bestand.from_file(
         voorbeeld_pdf_file,
         informatieobject.verwijzing(),
     )
