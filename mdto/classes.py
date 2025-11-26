@@ -5,7 +5,7 @@ import hashlib
 from pathlib import Path
 from datetime import datetime
 from dataclasses import Field, dataclass
-from typing import Any, List, Self, TextIO, Type, TypeVar, Union, get_args, get_origin
+from typing import Any, Self, TextIO, Type, TypeVar, Union, get_args, get_origin
 
 import lxml.etree as ET
 
@@ -25,7 +25,7 @@ ObjectT = TypeVar("ObjectT", bound="Object")
 class ValidationError(TypeError):
     """Custom formatter for MDTO validation errors"""
 
-    def __init__(self, field_path: List[str], msg: str):
+    def __init__(self, field_path: list[str], msg: str):
         super().__init__(f"{'.'.join(field_path)}:\n  {msg}")
         self.field_path = field_path
         self.msg = msg
@@ -126,7 +126,7 @@ class Serializable:
                 if field_value is None or len(str(field_value)) == 0:
                     raise _ValidationError("field value must not be empty or None")
 
-    def _mdto_ordered_fields(self) -> List[Field]:
+    def _mdto_ordered_fields(self) -> list[Field]:
         """Sort dataclass fields by their order in the MDTO XSD.
 
         This method should be overridden when the order of fields in
@@ -257,7 +257,7 @@ class BegripGegevens(Serializable):
     begripBegrippenlijst: VerwijzingGegevens
     begripCode: str = None
 
-    def _mdto_ordered_fields(self) -> List[Field]:
+    def _mdto_ordered_fields(self) -> list[Field]:
         """Sort dataclass fields by their order in the MDTO XSD."""
         fields = super()._mdto_ordered_fields()
         # swap order of begripBegrippenlijst and begripCode
@@ -403,7 +403,7 @@ class BeperkingGebruikGegevens(Serializable):
 
     beperkingGebruikType: BegripGegevens
     beperkingGebruikNadereBeschrijving: str = None
-    beperkingGebruikDocumentatie: VerwijzingGegevens | List[VerwijzingGegevens] = None
+    beperkingGebruikDocumentatie: VerwijzingGegevens | list[VerwijzingGegevens] = None
     beperkingGebruikTermijn: TermijnGegevens = None
 
 
@@ -477,8 +477,8 @@ class RaadpleeglocatieGegevens(Serializable):
         raadpleeglocatieOnline (Optional[str]): Online raadpleeglocatie van het informatieobject; moet een valide URL zijn
     """
 
-    raadpleeglocatieFysiek: VerwijzingGegevens | List[VerwijzingGegevens] = None
-    raadpleeglocatieOnline: str | List[str] = None
+    raadpleeglocatieFysiek: VerwijzingGegevens | list[VerwijzingGegevens] = None
+    raadpleeglocatieOnline: str | list[str] = None
 
     def validate(self) -> None:
         super().validate()
@@ -543,7 +543,7 @@ class Object(Serializable):
     to/from XML files.
     """
 
-    identificatie: IdentificatieGegevens | List[IdentificatieGegevens]
+    identificatie: IdentificatieGegevens | list[IdentificatieGegevens]
     naam: str
 
     def __post_init__(self):
@@ -726,58 +726,58 @@ class Informatieobject(Object, Serializable):
     ```
 
     Args:
-        identificatie (IdentificatieGegevens | List[IdentificatieGegevens]): Identificatiekenmerk
+        identificatie (IdentificatieGegevens | list[IdentificatieGegevens]): Identificatiekenmerk
         naam (str): Aanduiding waaronder het object bekend is
-        archiefvormer (VerwijzingGegevens | List[VerwijzingGegevens]): Maker/ontvanger
-        beperkingGebruik (BeperkingGebruikGegevens | List[BeperkingGebruikGegevens]): Beperking op het gebruik
+        archiefvormer (VerwijzingGegevens | list[VerwijzingGegevens]): Maker/ontvanger
+        beperkingGebruik (BeperkingGebruikGegevens | list[BeperkingGebruikGegevens]): Beperking op het gebruik
         waardering (BegripGegevens): Waardering volgens een selectielijst
         aggregatieniveau (Optional[BegripGegevens]): Aggregatieniveau
-        classificatie (Optional[BegripGegevens | List[BegripGegevens]]): Classificatie volgens een classificatieschema
-        trefwoord (Optional[str | List[str]]): Trefwoord
-        omschrijving (Optional[str | List[str]]): Inhoudelijke omschrijving
-        raadpleeglocatie(Optional[RaadpleeglocatieGegevens | List[RaadpleeglocatieGegevens]]): Raadpleeglocatie
-        dekkingInTijd (Optional[DekkingInTijdGegevens | List[DekkingInTijdGegevens]]): Betreffende periode/tijdstip
-        dekkingInRuimte (Optional[VerwijzingGegevens | List[VerwijzingGegevens]]): Betreffende plaats/locatie
-        taal (Optional[str | List[str]]): Taal van het object
-        event (Optional[EventGegevens | List[EventGegevens]]): Gerelateerde gebeurtenis
+        classificatie (Optional[BegripGegevens | list[BegripGegevens]]): Classificatie volgens een classificatieschema
+        trefwoord (Optional[str | list[str]]): Trefwoord
+        omschrijving (Optional[str | list[str]]): Inhoudelijke omschrijving
+        raadpleeglocatie(Optional[RaadpleeglocatieGegevens | list[RaadpleeglocatieGegevens]]): Raadpleeglocatie
+        dekkingInTijd (Optional[DekkingInTijdGegevens | list[DekkingInTijdGegevens]]): Betreffende periode/tijdstip
+        dekkingInRuimte (Optional[VerwijzingGegevens | list[VerwijzingGegevens]]): Betreffende plaats/locatie
+        taal (Optional[str | list[str]]): Taal van het object
+        event (Optional[EventGegevens | list[EventGegevens]]): Gerelateerde gebeurtenis
         bewaartermijn (Optional[TermijnGegevens]): Termijn waarin het object bewaard dient te worden
         informatiecategorie (Optional[BegripGegevens]): Informatiecategorie waar de bewaartermijn op gebaseerd is
-        isOnderdeelVan (Optional[VerwijzingGegevens | List[VerwijzingGegevens]]): Bovenliggend object
-        bevatOnderdeel (Optional[VerwijzingGegevens | List[VerwijzingGegevens]]): Onderliggend object
-        heeftRepresentatie (Optional[VerwijzingGegevens | List[VerwijzingGegevens]]): Bijbehorend Bestand object
-        aanvullendeMetagegevens (Optional[VerwijzingGegevens | List[VerwijzingGegevens]]): Aanvullende metagegevens
-        gerelateerdInformatieobject (Optional[GerelateerdInformatieobjectGegevens | List[GerelateerdInformatieobjectGegevens]]): Gerelateerd object
-        betrokkene (Optional[BetrokkeneGegevens | List[BetrokkeneGegevens]]): Persoon/organisatie betrokken bij
+        isOnderdeelVan (Optional[VerwijzingGegevens | list[VerwijzingGegevens]]): Bovenliggend object
+        bevatOnderdeel (Optional[VerwijzingGegevens | list[VerwijzingGegevens]]): Onderliggend object
+        heeftRepresentatie (Optional[VerwijzingGegevens | list[VerwijzingGegevens]]): Bijbehorend Bestand object
+        aanvullendeMetagegevens (Optional[VerwijzingGegevens | list[VerwijzingGegevens]]): Aanvullende metagegevens
+        gerelateerdInformatieobject (Optional[GerelateerdInformatieobjectGegevens | list[GerelateerdInformatieobjectGegevens]]): Gerelateerd object
+        betrokkene (Optional[BetrokkeneGegevens | list[BetrokkeneGegevens]]): Persoon/organisatie betrokken bij
           ontstaan en gebruik van dit object
-        activiteit (Optional[VerwijzingGegevens | List[VerwijzingGegevens]]): Activiteit waarbij dit object
+        activiteit (Optional[VerwijzingGegevens | list[VerwijzingGegevens]]): Activiteit waarbij dit object
           is gemaakt/ontvangen
     """
 
-    archiefvormer: VerwijzingGegevens | List[VerwijzingGegevens]
-    beperkingGebruik: BeperkingGebruikGegevens | List[BeperkingGebruikGegevens]
+    archiefvormer: VerwijzingGegevens | list[VerwijzingGegevens]
+    beperkingGebruik: BeperkingGebruikGegevens | list[BeperkingGebruikGegevens]
     waardering: BegripGegevens
     aggregatieniveau: BegripGegevens = None
-    classificatie: BegripGegevens | List[BegripGegevens] = None
-    trefwoord: str | List[str] = None
-    omschrijving: str | List[str] = None
-    raadpleeglocatie: RaadpleeglocatieGegevens | List[RaadpleeglocatieGegevens] = None
-    dekkingInTijd: DekkingInTijdGegevens | List[DekkingInTijdGegevens] = None
-    dekkingInRuimte: VerwijzingGegevens | List[VerwijzingGegevens] = None
-    taal: str | List[str] = None
-    event: EventGegevens | List[EventGegevens] = None
+    classificatie: BegripGegevens | list[BegripGegevens] = None
+    trefwoord: str | list[str] = None
+    omschrijving: str | list[str] = None
+    raadpleeglocatie: RaadpleeglocatieGegevens | list[RaadpleeglocatieGegevens] = None
+    dekkingInTijd: DekkingInTijdGegevens | list[DekkingInTijdGegevens] = None
+    dekkingInRuimte: VerwijzingGegevens | list[VerwijzingGegevens] = None
+    taal: str | list[str] = None
+    event: EventGegevens | list[EventGegevens] = None
     bewaartermijn: TermijnGegevens = None
     informatiecategorie: BegripGegevens = None
-    isOnderdeelVan: VerwijzingGegevens | List[VerwijzingGegevens] = None
-    bevatOnderdeel: VerwijzingGegevens | List[VerwijzingGegevens] = None
-    heeftRepresentatie: VerwijzingGegevens | List[VerwijzingGegevens] = None
-    aanvullendeMetagegevens: VerwijzingGegevens | List[VerwijzingGegevens] = None
+    isOnderdeelVan: VerwijzingGegevens | list[VerwijzingGegevens] = None
+    bevatOnderdeel: VerwijzingGegevens | list[VerwijzingGegevens] = None
+    heeftRepresentatie: VerwijzingGegevens | list[VerwijzingGegevens] = None
+    aanvullendeMetagegevens: VerwijzingGegevens | list[VerwijzingGegevens] = None
     gerelateerdInformatieobject: (
-        GerelateerdInformatieobjectGegevens | List[GerelateerdInformatieobjectGegevens]
+        GerelateerdInformatieobjectGegevens | list[GerelateerdInformatieobjectGegevens]
     ) = None
-    betrokkene: BetrokkeneGegevens | List[BetrokkeneGegevens] = None
-    activiteit: VerwijzingGegevens | List[VerwijzingGegevens] = None
+    betrokkene: BetrokkeneGegevens | list[BetrokkeneGegevens] = None
+    activiteit: VerwijzingGegevens | list[VerwijzingGegevens] = None
 
-    def _mdto_ordered_fields(self) -> List[Field]:
+    def _mdto_ordered_fields(self) -> list[Field]:
         """Sort dataclass fields by their order in the MDTO XSD."""
         sorting_mapping = {
             "identificatie": 0,
@@ -850,7 +850,7 @@ class Bestand(Object, Serializable):
         `Bestand.from_file()` class method instead.
 
     Args:
-        identificatie (IdentificatieGegevens | List[IdentificatieGegevens]): Identificatiekenmerk
+        identificatie (IdentificatieGegevens | list[IdentificatieGegevens]): Identificatiekenmerk
         naam (str): Aanduiding waaronder dit object bekend is (meestal bestandsnaam)
         omvang (int): Aantal bytes in het bestand
         bestandsformaat (BegripGegevens): Bestandsformaat, bijv. PRONOM of MIME-type informatie
@@ -861,11 +861,11 @@ class Bestand(Object, Serializable):
 
     omvang: int
     bestandsformaat: BegripGegevens
-    checksum: ChecksumGegevens | List[ChecksumGegevens]
+    checksum: ChecksumGegevens | list[ChecksumGegevens]
     isRepresentatieVan: VerwijzingGegevens
     URLBestand: str = None
 
-    def _mdto_ordered_fields(self) -> List[Field]:
+    def _mdto_ordered_fields(self) -> list[Field]:
         """Sort dataclass fields by their order in the MDTO XSD."""
         fields = super()._mdto_ordered_fields()
         # swap order of isRepresentatieVan and URLbestand

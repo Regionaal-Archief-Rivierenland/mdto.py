@@ -9,7 +9,7 @@ import re
 from datetime import datetime
 from functools import lru_cache
 from pathlib import Path
-from typing import TYPE_CHECKING, TextIO, Tuple
+from typing import TYPE_CHECKING, TextIO
 
 import lxml.etree as ET
 
@@ -227,7 +227,7 @@ datetime_fmts = date_fmts + [("%Y-%m-%dT%H:%M:%S", 19)]
 tz_regex = re.compile(r"(.*?)(Z|[+-](\d{2}):(\d{2}))?")
 
 
-def _valid_mdto_date(date: str, fmts: List[Tuple]) -> bool:
+def _valid_mdto_date(date: str, fmts: list[tuple]) -> bool:
     """Generic date checking function; use valid_mdto_datetime or valid_mdto_date"""
     # strip and capture timezone info
     date, _, tz_info_hh, tz_info_mm = tz_regex.fullmatch(date).groups()
