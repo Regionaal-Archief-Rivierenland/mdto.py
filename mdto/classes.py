@@ -338,7 +338,7 @@ class ChecksumGegevens(Serializable):
     def validate(self) -> None:
         super().validate()
 
-        if helpers.valid_mdto_datetime_precise(self.checksumDatum):
+        if not helpers.valid_mdto_datetime_precise(self.checksumDatum):
             raise DateValidationError(
                 ["Bestand", "checksum", "checksumDatum"],
                 self.checksumDatum,
