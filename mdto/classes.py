@@ -340,7 +340,10 @@ class ChecksumGegevens(Serializable):
 
         if not helpers.valid_mdto_datetime_precise(self.checksumDatum):
             raise DateValidationError(
-                ["Bestand", "checksum", "checksumDatum"],
+                # FIXME: having ["Bestand", "checksum", "checksumDatum"] here leads to weird error
+                # messages in Object.validate() (i.e. .validate() calls in parent classes).
+                # The shortened version is also kind of weird tho, because you have no parent information. (you now only get that if you call .validate on a Bestand)
+                ["checksumDatum"],
                 self.checksumDatum,
                 ["%Y-%m-%dT%H:%M:%S"],
             )
