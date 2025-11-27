@@ -50,7 +50,7 @@ class DateValidationError(ValidationError):
 # TODO: update name and docstring to be more descriptive? Now, this class does more than just serialize
 # or maybe refactor?
 class Serializable:
-    """Provides is_valid() and to_xml() methods for converting MDTO dataclasses
+    """Provides validate() and to_xml() methods for converting MDTO dataclasses
     to valid MDTO XML."""
 
     def validate(self) -> None:
