@@ -82,13 +82,14 @@ def test_valid_dates(date_str):
 def test_invalid_dates(date_str):
     assert not valid_mdto_datetime(date_str)
 
+
 @pytest.mark.parametrize(
     "duration_str",
     [
         "P3Y6M4DT12H30M5S",
         "P0.5Y",
         "P10W",
-    ]
+    ],
 )
 def test_valid_durations(duration_str):
     assert valid_duration(duration_str)
