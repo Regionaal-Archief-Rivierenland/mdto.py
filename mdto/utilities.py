@@ -1,17 +1,11 @@
 # Public functions
 
 import re
-
 from typing import TextIO
 
-from mdto.gegevensgroepen import *
+from .gegevensgroepen import *
 
-# allow running directly from interpreter
-try:
-    from . import helpers
-except ImportError:
-    import helpers
-
+from . import helpers
 
 
 def verwijzing_gegevens_from_tooi_gemeentenaam(gemeentenaam: str) -> VerwijzingGegevens:

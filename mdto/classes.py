@@ -11,7 +11,6 @@ import lxml.etree as ET
 
 from . import helpers
 
-
 # globals
 MDTO_MAX_NAAM_LENGTH = 80
 
