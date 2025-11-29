@@ -1,6 +1,6 @@
 import pytest
 
-from mdto import ValidationError
+from mdto import ValidationError, DateValidationError
 from mdto.gegevensgroepen import *
 from mdto.helpers import valid_mdto_datetime, valid_duration
 
@@ -106,3 +106,19 @@ def test_valid_durations(duration_str):
 )
 def test_invalid_durations(duration_str):
     assert not valid_duration(duration_str)
+
+
+def test_date_validation_error_message():
+    """Check if DateValidationError message contains the essential info"""
+    checksum = ChecksumGegevens(
+        checksumAlgoritme=BegripGegevens("nvt", VerwijzingGegevens("nvt")),
+        checksumWaarde="abc123",
+        checksumDatum="2024-01-15",  # missing time component
+    )
+    with pytest.raises(DateValidationError) as err:
+        checksum.validate()
+
+    err = str(err_msg.value)
+    assert "2024-01-15" in err        # should show offending value
+    assert "checksumDatum" in err     # should show incorrect field
+    assert "%Y-%m-%dT%H:%M:%S" in err # should show accepted format
