@@ -9,11 +9,8 @@ from typing import Any, List, Self, TextIO, Type, TypeVar, Union, get_args, get_
 
 import lxml.etree as ET
 
-# allow running directly from interpreter
-try:
-    from . import helpers
-except ImportError:
-    import helpers
+from . import helpers
+
 
 # globals
 MDTO_MAX_NAAM_LENGTH = 80
