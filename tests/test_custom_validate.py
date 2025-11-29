@@ -119,7 +119,7 @@ def test_date_validation_error_message():
     with pytest.raises(DateValidationError) as err:
         checksum.validate()
 
-    err = str(err_msg.value)
+    err = str(err.value)
     assert "2024-01-15" in err        # should show offending value
     assert "checksumDatum" in err     # should show incorrect field
     assert "%Y-%m-%dT%H:%M:%S" in err # should show accepted format
