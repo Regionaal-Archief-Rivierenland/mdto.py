@@ -445,8 +445,8 @@ class EventGegevens(Serializable):
     """https://nationaalarchief.nl/archiveren/mdto/event
 
     Args:
-        eventType (BegripGegevens): Aanduiding van het type event
-        eventTijd (Optional[str]): Tijdstip waarop het event heeft plaatsgevonden
+        eventType (BegripGegevens): Het type event
+        eventTijd (Optional[str]): Datum + tijdstip waarop event plaatsvond, bijv. 2001-10-12T12:05:11
         eventVerantwoordelijkeActor (Optional[VerwijzingGegevens]): Actor die verantwoordelijk was voor het event
         eventResultaat (Optional[str]): Beschrijving van het resultaat van het event
     """
