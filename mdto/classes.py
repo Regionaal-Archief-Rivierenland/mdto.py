@@ -919,10 +919,10 @@ class Bestand(Object, Serializable):
               VerwijzingGegevens referencing an informatieobject.
               Used to construct <isRepresentatieVan>.
             use_mimetype (Optional[bool]): populate `<bestandsformaat>`
-              with mimetype instead of pronom info
+              with mimetype instead of PRONOM info
 
         Example:
-          ```python
+         ```python
 
          verwijzing_obj = VerwijzingGegevens("vergunning.mdto.xml")
          bestand = Bestand.from_file(
