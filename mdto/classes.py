@@ -584,8 +584,6 @@ class Object(Serializable):
         mdto.append(children)
 
         tree = ET.ElementTree(mdto)
-        # use tabs as indentation (this matches what MDTO does)
-        ET.indent(tree, space="\t")
         return tree
 
     def validate(self) -> None:
@@ -598,25 +596,28 @@ class Object(Serializable):
     def save(
         self,
         file_or_filename: str | TextIO,
-        lxml_args: dict = {
-            "xml_declaration": True,
-            "pretty_print": True,
-            "encoding": "UTF-8",
-        },
+        minify: bool = False,
+        **lxml_kwargs,
     ) -> None:
-        """Save object to an XML file, provided it satifies the MDTO schema.
+        """Save object to a XML file, provided it satifies the MDTO schema.
+
+        The XML is pretty printed by default; use `minify=True` to reverse this.
 
         Args:
-            file_or_filename (str | TextIO): Path or file-like object to write object's XML representation to
-            lxml_args (Optional[dict]): Extra keyword arguments to pass to lxml's write() method.
-              Defaults to `{xml_declaration=True, pretty_print=True, encoding="UTF-8"}`.
+            file_or_filename (str | TextIO): Path or file-like object to write
+             object's XML representation to
+            minify (Optional[bool]): the reverse of pretty printing; makes the XML
+             as small as possible by removing the XML declaration and any optional
+             whitespace
+            **lxml_kwargs (Optional): Remaining keyword arguments will be passed
+             to lxml's `write` method
 
         Note:
-            For a complete list of options for lxml's write method, see
+            For a complete list of arguments of lxml's write method, see
             https://lxml.de/apidoc/lxml.etree.html#lxml.etree._ElementTree.write
 
         Raises:
-            ValidationError: Raised when the object voilates the MDTO schema
+            ValidationError: Object voilates the MDTO schema
         """
         # lxml wants files in binary mode, so pass along a file's raw byte stream
         if hasattr(file_or_filename, "write"):
@@ -626,8 +627,19 @@ class Object(Serializable):
         # (doing this in to_xml would be slow, and perhaps unexpected)
         self.validate()
 
+        defaults = {
+            "xml_declaration": not minify,
+            "pretty_print": not minify,
+            "encoding": "UTF-8",
+        }
+
         xml = self.to_xml()
-        xml.write(file_or_filename, **lxml_args)
+        if not minify:
+            # match MDTO voorbeeld bestanden in terms of whitespace
+            ET.indent(xml, space="\t")
+
+        # `|` is a union operator; it merges two dicts, with right-hand side taking precedence
+        xml.write(file_or_filename, **(defaults | lxml_kwargs))
 
     @classmethod
     def open(cls: Type[ObjectT], mdto_xml: TextIO | str) -> ObjectT:

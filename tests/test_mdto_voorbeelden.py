@@ -19,6 +19,8 @@ def serialization_chain(xmlfile: str) -> str:
 
     # Serialize back to XML
     output_tree = informatieobject_of_bestand.to_xml()
+    # indent the tree with a tab to match what mdto does
+    ET.indent(output_tree, space="\t")
 
     return (
         ET.tostring(
