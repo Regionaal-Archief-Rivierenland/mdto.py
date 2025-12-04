@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 
 # setup logging
 logging.basicConfig(
-    format="[%(asctime)s] %(levelname)s: %(message)s", datefmt="%H:%M:%S"
+    format="%(levelname)s: %(message)s",
 )
 logging.addLevelName(
     # colorize warning messages
