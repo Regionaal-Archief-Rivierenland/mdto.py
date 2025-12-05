@@ -1,4 +1,4 @@
-Deze  _unit tests_ valideren de werking van deze library door naar drie dingen te kijken:
+Deze  _unit tests_ valideren de werking van deze library door naar aantal dingen te kijken:
 
 1. Is de geproduceerde XML output valide volgens de MDTO XSD?
 2. Kunnen alle MDTO voorbeeldbestanden correct worden ingelezen?
