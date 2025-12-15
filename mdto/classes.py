@@ -597,7 +597,7 @@ class Object(Serializable):
         self,
         file_or_filename: str | TextIO,
         minify: bool = False,
-        **lxml_kwargs,
+        lxml_kwargs: dict = {},
     ) -> None:
         """Save object to a XML file, provided it satifies the MDTO schema.
 
@@ -609,8 +609,8 @@ class Object(Serializable):
             minify (Optional[bool]): the reverse of pretty printing; makes the XML
              as small as possible by removing the XML declaration and any optional
              whitespace
-            **lxml_kwargs (Optional): Remaining keyword arguments will be passed
-             to lxml's `write` method
+            lxml_kwargs (Optional[dict]): optional dict of keyword arguments that
+             will be passed to lxml's `write` method
 
         Note:
             For a complete list of arguments of lxml's write method, see
