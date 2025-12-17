@@ -6,6 +6,7 @@ from __future__ import annotations
 import logging
 import mimetypes
 import re
+import os
 from datetime import datetime
 from functools import lru_cache
 from pathlib import Path
@@ -22,15 +23,21 @@ if TYPE_CHECKING:
     )
 
 # setup logging
-logging.basicConfig(
-    format="%(levelname)s: %(message)s",
-)
-logging.addLevelName(
-    # colorize warning messages
-    logging.WARNING,
-    "\033[1;33m%s\033[1;0m" % logging.getLevelName(logging.WARNING),
-)
+logger = logging.getLogger("mdto.py")
 
+if os.environ.get("MDTO_QUIET"):
+    logger.addHandler(logging.NullHandler())
+    logger.propagate = False
+else:
+    handler = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter("%(levelname)s: %(message)s"))
+    logger.addHandler(handler)
+    logger.setLevel(logging.WARNING)
+
+    logging.addLevelName(
+        logging.WARNING,
+        "\033[1;33m%s\033[1;0m" % logging.getLevelName(logging.WARNING),
+    )
 
 @lru_cache(maxsize=1)
 def load_tooi_register_gemeenten() -> dict:
@@ -139,7 +146,7 @@ def pronominfo(file: str | Path) -> BegripGegevens:
     # extract match
     matches = prinfo["matches"]
     if len(matches) > 1:
-        logging.warning(
+        logger.warning(
             "siegfried returned more than one PRONOM match "
             f"for {file}. Selecting the first one."
         )
@@ -154,7 +161,7 @@ def pronominfo(file: str | Path) -> BegripGegevens:
     # log siegfried's warnings (such as extension mismatches)
     warning = match["warning"]
     if warning:
-        logging.warning(f"siegfried reports PRONOM warning about {file}: {warning}")
+        logger.warning(f"siegfried reports PRONOM warning about {file}: {warning}")
 
     return BegripGegevens(
         begripLabel=match["format"],
