@@ -2,6 +2,7 @@ import dataclasses
 import hashlib
 import os
 import uuid
+import re
 from dataclasses import Field, dataclass
 from datetime import datetime
 from pathlib import Path
@@ -237,6 +238,63 @@ class VerwijzingGegevens(Serializable):
             helpers.logging.warning(
                 f"VerwijzingGegevens.verwijzingNaam: {self.verwijzingNaam} exceeds recommended length of {MDTO_MAX_NAAM_LENGTH}"
             )
+
+    @classmethod
+    def gemeente(cls, gemeentenaam_of_tooi_code: str) -> Self:
+        """Create a VerwijzingGegevens that references a municipality
+        by its official name and code from the TOOI register.
+
+        Accepts either a municipality name (e.g. 'Tiel', 'Gemeente Brielle') or
+        a code (e.g. 'gm0218', '0218').
+
+        Example:
+            ```python
+            >>> tiel = VerwijzingGegevens.gemeente('Tiel')
+            >>> tiel.verwijzingIdentificatie
+            IdentificatieGegevens('gm0218', 'TOOI register gemeenten compleet')
+            # create a reference to a munacipality from its TOOI code instead of name
+            >>> alphen = VerwijzingGegevens.gemeente('0484')
+            >>> alphen.verwijzingNaam
+            Gemeente Alphen aan den Rijn
+            ```
+
+        Args:
+            gemeentenaam_of_tooi_code: Municipality name (optionally prefixed with "Gemeente")
+                                       or four-digit code (optionally prefixed with "gm").
+
+        Returns:
+            VerwijzingGegevens: reference to a municipality by its
+             official name and code from the TOOI register.
+
+        Raises:
+            ValueError: Municipality name or code was not found in the TOOI register.
+        """
+        tooi_register = helpers.load_tooi_register_gemeenten()
+
+        if match := re.fullmatch(r"(gm)?(\d{4})", gemeentenaam_of_tooi_code.lower()):
+            # get name from code
+            tooi_code = match.group(2)
+            if tooi_naam := tooi_register.get(tooi_code):
+                tooi_naam = f"Gemeente {tooi_naam}"
+        else:
+            # get code from name
+            tooi_code = tooi_register.get(
+                gemeentenaam_of_tooi_code.lower().removeprefix("gemeente ")
+            )
+            tooi_naam = gemeentenaam_of_tooi_code
+
+        if tooi_naam and tooi_code:
+            return cls(
+                tooi_naam,
+                IdentificatieGegevens(
+                    f"gm{tooi_code}", "TOOI register gemeenten compleet"
+                ),
+            )
+
+        raise ValueError(
+            f"Name or code '{gemeentenaam_of_tooi_code}' not found in 'TOOI register gemeenten compleet'. "
+            "For a list of possible values, see https://identifier.overheid.nl/tooi/set/rwc_gemeenten_compleet"
+        )
 
 
 @dataclass

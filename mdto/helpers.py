@@ -33,17 +33,46 @@ logging.addLevelName(
 
 
 @lru_cache(maxsize=1)
-def load_tooi_register_gemeenten():
-    """This function caches the JSON dict, so that it remains loaded within a single python session.
+def load_tooi_register_gemeenten() -> dict:
+    """Transforms the gemeente register JSON into a efficient lookup
+    table, and caches the result for the rest of the session.
 
-    Makes a big difference in performance.
+    Caching this table makes a big difference in performance.
+
+    Returns:
+        dict: bidirectional lookup table that maps TOOI gemeentenamen to
+              TOOI codes, and vice versa
+
     """
-    import importlib.resources  # importing here improves helpers.py initialization speed
+    import importlib.resources  # importing here improves initialization speed
     import json
+
+    gemeentenaam_key = (
+        "https://identifier.overheid.nl/tooi/def/ont/officieleNaamExclSoort"
+    )
+    gemeentecode_key = "https://identifier.overheid.nl/tooi/def/ont/gemeentecode"
 
     json_path = importlib.resources.files("mdto.data") / "rwc_gemeenten_compleet_4.json"
     with json_path.open("r") as f:
-        return json.load(f)
+        raw_dict = json.load(f)
+
+    # convert to a symmetrical lookup table
+    gemeente_lookup_table = {}
+    for gem in raw_dict:
+        # the JSON also records things other than gemeente entries
+        if not "https://identifier.overheid.nl/tooi/def/ont/Gemeente" in gem["@type"]:
+            continue
+
+        naam_pretty, code = (
+            gem[gemeentenaam_key][0]["@value"],
+            gem[gemeentecode_key][0]["@value"],
+        )
+        # use lowercase version as key
+        naam_key = naam_pretty.lower()
+        gemeente_lookup_table[naam_key] = code
+        gemeente_lookup_table[code] = naam_pretty
+
+    return gemeente_lookup_table
 
 
 def process_file(file_or_filename: TextIO | str) -> TextIO:
