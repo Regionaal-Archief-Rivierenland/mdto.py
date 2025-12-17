@@ -1021,7 +1021,6 @@ class Bestand(Object, Serializable):
         else:
             bestandsformaat = helpers.mimetypeinfo(file.name)
 
-
         # file or file path?
         if isinstance(isrepresentatievan, (str, Path)) or hasattr(
             isrepresentatievan, "read"
