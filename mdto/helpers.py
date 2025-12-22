@@ -41,8 +41,9 @@ else:
 
 @lru_cache(maxsize=1)
 def load_tooi_register_gemeenten() -> dict:
-    """Transforms the gemeente register JSON into a efficient lookup
-    table, and caches the result for the rest of the session.
+    """Transforms the gemeente register JSON into a biderectional lookup
+    table where key -> value and value -> key, and caches the result for 
+    the rest of the session.
 
     Caching this table makes a big difference in performance.
 
@@ -63,7 +64,7 @@ def load_tooi_register_gemeenten() -> dict:
     with json_path.open("r") as f:
         raw_dict = json.load(f)
 
-    # convert to a symmetrical lookup table
+    # convert to a bidirectional lookup table
     gemeente_lookup_table = {}
     for gem in raw_dict:
         # the JSON also records things other than gemeente entries
