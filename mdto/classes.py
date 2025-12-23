@@ -690,19 +690,19 @@ class Object(Serializable):
         # (doing this in to_xml would be slow, and perhaps unexpected)
         self.validate()
 
-        defaults = {
+        if not minify:
+            # match MDTO voorbeeld bestanden in terms of whitespace
+            ET.indent(xml, space="\t")
+
+        lxml_defaults = {
             "xml_declaration": not minify,
             "pretty_print": not minify,
             "encoding": "UTF-8",
         }
 
         xml = self.to_xml()
-        if not minify:
-            # match MDTO voorbeeld bestanden in terms of whitespace
-            ET.indent(xml, space="\t")
-
         # `|` is a union operator; it merges two dicts, with right-hand side taking precedence
-        xml.write(file_or_filename, **(defaults | lxml_kwargs))
+        xml.write(file_or_filename, **(lxml_defaults | lxml_kwargs))
 
     @classmethod
     def open(cls: Type[ObjectT], mdto_xml: TextIO | str) -> ObjectT:
