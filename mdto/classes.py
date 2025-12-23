@@ -78,7 +78,7 @@ class Serializable:
 
             cls_name = self.__class__.__name__
             _ValidationError = (
-                lambda msg: ValidationError([cls_name, field_name], self._file)
+                lambda msg: ValidationError([cls_name, field_name], msg, self._file)
                 if cls_name in ["Informatieobject", "Bestand"]
                 else ValidationError([field_name], msg)
             )
