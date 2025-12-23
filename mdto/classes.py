@@ -177,7 +177,7 @@ class Serializable:
         if not isinstance(field_value, (list, tuple, set)):
             field_value = (field_value,)
 
-        # serialize sequence of primitives or *Gegevens objects
+        # serialize sequence of primitives and *Gegevens objects
         for val in field_value:
             if isinstance(val, Serializable):
                 root_elem.append(val.to_xml(field_name))
@@ -686,7 +686,8 @@ class Object(Serializable):
         if hasattr(file_or_filename, "write"):
             file_or_filename = file_or_filename.buffer.raw
 
-        # validate before serialization to ensure correctness
+        xml = self.to_xml()
+        # validate to ensure correctness
         # (doing this in to_xml would be slow, and perhaps unexpected)
         self.validate()
 
@@ -700,7 +701,6 @@ class Object(Serializable):
             "encoding": "UTF-8",
         }
 
-        xml = self.to_xml()
         # `|` is a union operator; it merges two dicts, with right-hand side taking precedence
         xml.write(file_or_filename, **(lxml_defaults | lxml_kwargs))
 
