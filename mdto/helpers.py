@@ -229,10 +229,10 @@ def detect_verwijzing(informatieobject: TextIO | str) -> VerwijzingGegevens:
     if None in [kenmerk, bron]:
         raise ValueError(f"Failed to detect <identificatie> in {informatieobject}")
 
-    identificatie = IdentificatieGegevens(kenmerk.text, bron.text)
-
     if naam is None:
         raise ValueError(f"Failed to detect <naam> in {informatieobject}")
+
+    identificatie = IdentificatieGegevens(kenmerk.text, bron.text)
 
     return VerwijzingGegevens(naam.text, identificatie)
 
