@@ -133,7 +133,7 @@ def pronominfo(file: str | Path) -> BegripGegevens:
     err = prinfo["errors"]
     if err:
         if "empty" in err:
-            logging.warning(f"{file} appears to be an empty file")
+            logger.warning(f"{file} appears to be an empty file")
         elif "no such file or directory" in err:
             # this specific message only occurs for files
             raise FileNotFoundError(f"{file}: no such file")
