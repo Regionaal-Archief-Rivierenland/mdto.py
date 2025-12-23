@@ -22,7 +22,12 @@ ObjectT = TypeVar("ObjectT", bound="Object")
 class ValidationError(TypeError):
     """Custom formatter for MDTO validation errors"""
 
-    def __init__(self, field_path: list[str], msg: str):
+    def __init__(self, field_path: list[str], msg: str, original_file: str = None):
+
+        # print associated file, if given
+        if original_file:
+            msg += f" (original file: {original_file})"
+
         super().__init__(f"{'.'.join(field_path)}:\n  {msg}")
         self.field_path = field_path
         self.msg = msg
@@ -73,9 +78,9 @@ class Serializable:
 
             cls_name = self.__class__.__name__
             _ValidationError = (
-                lambda m: ValidationError([cls_name, field_name], m)
+                lambda msg: ValidationError([cls_name, field_name], self._file)
                 if cls_name in ["Informatieobject", "Bestand"]
-                else ValidationError([field_name], m)
+                else ValidationError([field_name], msg)
             )
 
             # check if field is listable based on type hint
@@ -765,8 +770,8 @@ class Object(Serializable):
         else:
             obj = cls._from_elem(children)
 
-        # store XML file path for later reference
-        # todo: normalize this so that it will always store an absolute path?
+        # store original file path for later reference
+        # TODO: normalize this so that it will always store an absolute path?
         obj._file = mdto_xml.name if hasattr(mdto_xml, "write") else str(mdto_xml)
         return obj
 
