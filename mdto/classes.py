@@ -777,7 +777,7 @@ class Object(Serializable):
 
     def verwijzing(self) -> VerwijzingGegevens:
         """
-        Create a VerwijzingGegevens object that references the Informatieobject/Bestand.
+        Create a VerwijzingGegevens object that references this Informatieobject/Bestand.
         Useful to populate `heeftRepresentatie` or `isOnderdeelVan`.
 
         Returns:
