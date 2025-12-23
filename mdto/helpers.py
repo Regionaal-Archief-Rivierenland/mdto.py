@@ -27,12 +27,10 @@ logger = logging.getLogger("mdto.py")
 
 if os.environ.get("MDTO_QUIET"):
     logger.addHandler(logging.NullHandler())
-    logger.propagate = False
 else:
     handler = logging.StreamHandler()
     handler.setFormatter(logging.Formatter("%(levelname)s: %(message)s"))
     logger.addHandler(handler)
-    logger.setLevel(logging.WARNING)
 
     logging.addLevelName(
         logging.WARNING,
