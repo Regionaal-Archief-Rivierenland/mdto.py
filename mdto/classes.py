@@ -673,7 +673,7 @@ class Object(Serializable):
              as small as possible by removing the XML declaration and any optional
              whitespace
             lxml_kwargs (Optional[dict]): optional dict of keyword arguments that
-             will be passed to lxml's `write` method
+             can be used to override the args passed to lxml's `write()`.
 
         Note:
             For a complete list of arguments of lxml's write method, see
