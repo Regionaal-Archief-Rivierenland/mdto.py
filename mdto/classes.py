@@ -170,7 +170,7 @@ class Serializable:
         representation to `root_elem`."""
 
         # skip empty fields
-        if field_value:
+        if field_value is None:
             return
 
         # convert field_value to an iterable (if not already)
