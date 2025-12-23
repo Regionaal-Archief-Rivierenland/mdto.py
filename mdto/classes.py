@@ -165,7 +165,7 @@ class Serializable:
         representation to `root_elem`."""
 
         # skip empty fields
-        if field_value is None:
+        if field_value is None or len(field_value) == 0:
             return
 
         # convert field_value to an iterable (if not already)
