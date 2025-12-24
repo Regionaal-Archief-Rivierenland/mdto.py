@@ -686,10 +686,10 @@ class Object(Serializable):
         if hasattr(file_or_filename, "write"):
             file_or_filename = file_or_filename.buffer.raw
 
-        xml = self.to_xml()
-        # validate to ensure correctness
+        # validate before serialization to ensure correctness
         # (doing this in to_xml would be slow, and perhaps unexpected)
         self.validate()
+        xml = self.to_xml()
 
         if not minify:
             # match MDTO voorbeeld bestanden in terms of whitespace
