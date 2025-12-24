@@ -23,7 +23,6 @@ class ValidationError(TypeError):
     """Custom formatter for MDTO validation errors"""
 
     def __init__(self, field_path: list[str], msg: str, original_file: str = None):
-
         # print associated file, if given
         if original_file:
             msg += f" (original file: {original_file})"
@@ -55,10 +54,15 @@ class Serializable:
     """Provides validate() and to_xml() methods for converting MDTO dataclasses
     to valid MDTO XML."""
 
-    def validate(self) -> None:
+    def validate(self, raise_on_empty_strings: bool = True) -> None:
         """Validate the object's fields against the MDTO schema. Additional
         validation logic can be incorporated by extending this method in a
         subclass.
+
+        Args:
+            raise_on_empty_strings(Optional[bool]): If true (the default), raise an
+              error on empty strings. Set to false if you want to produce illformed,
+              non-future-compatible MDTO, or promise to manually clean empty strings.
 
         Note:
            Typing information is infered based on type hints.
@@ -125,7 +129,9 @@ class Serializable:
                 # empty lists, empty strings, etc. are not allowed.
                 # (We're actually a little stricter than MDTO on this point)
                 # None is allowed, but only for optional elements (see above)
-                if field_value is None or len(str(field_value)) == 0:
+                if field_value is None or (
+                    len(str(field_value)) == 0 and raise_on_empty_strings
+                ):
                     raise _ValidationError("field value must not be empty or None")
 
     def _mdto_ordered_fields(self) -> list[Field]:
@@ -180,10 +186,14 @@ class Serializable:
         # serialize sequence of primitives and *Gegevens objects
         for val in field_value:
             if isinstance(val, Serializable):
-                root_elem.append(val.to_xml(field_name))
+                child = val.to_xml(field_name)
+                if len(child):  # avoid adding empty elems
+                    root_elem.append(child)
             else:
-                new_sub_elem = ET.SubElement(root_elem, field_name)
-                new_sub_elem.text = str(val)
+                val = str(val)
+                if val:  # skip empty strings (TODO: maybe use .strip() here)
+                    new_sub_elem = ET.SubElement(root_elem, field_name)
+                    new_sub_elem.text = val
 
     @classmethod
     def _from_elem(cls, elem: ET.Element):
@@ -649,8 +659,8 @@ class Object(Serializable):
         tree = ET.ElementTree(mdto)
         return tree
 
-    def validate(self) -> None:
-        super().validate()
+    def validate(self, raise_on_empty_strings: bool = False) -> None:
+        super().validate(raise_on_empty_strings)
         if len(self.naam) > MDTO_MAX_NAAM_LENGTH:
             helpers.logger.warning(
                 f"{self.__class__.__name__}.naam: '{self.naam}' exceeds recommended length of {MDTO_MAX_NAAM_LENGTH}"
@@ -688,7 +698,7 @@ class Object(Serializable):
 
         # validate before serialization to ensure correctness
         # (doing this in to_xml would be slow, and perhaps unexpected)
-        self.validate()
+        self.validate(raise_on_empty_strings=True)  # we cleanup empty string in to_xml
         xml = self.to_xml()
 
         if not minify:
@@ -905,8 +915,8 @@ class Informatieobject(Object, Serializable):
         """
         return super().to_xml("informatieobject")
 
-    def validate(self) -> None:
-        super().validate()
+    def validate(self, raise_on_empty_strings: bool = False) -> None:
+        super().validate(raise_on_empty_strings)
         if self.taal and not helpers.valid_langcode(self.taal):
             raise ValidationError(
                 ["Informatieobject", "taal"],
@@ -965,8 +975,8 @@ class Bestand(Object, Serializable):
         """
         return super().to_xml("bestand")
 
-    def validate(self) -> None:
-        super().validate()
+    def validate(self, raise_on_empty_strings: bool = False) -> None:
+        super().validate(raise_on_empty_strings)
         if self.URLBestand and not helpers.valid_url(self.URLBestand):
             raise ValidationError(
                 ["Bestand", "URLBestand"],

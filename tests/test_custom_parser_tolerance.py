@@ -4,6 +4,15 @@ import pytest
 from mdto.gegevensgroepen import *
 
 
+def test_remove_empty_nodes():
+    """Test removal of nested empty elements"""
+    nested_empty = VerwijzingGegevens("", IdentificatieGegevens('', ''))
+    # arguebly this to_xml call should return None but if you do
+    # something like `if child := val.to_xml(tag_name)` lxml will
+    # complain about Truth-testing and needinig to use len()
+    assert ET.tostring(nested_empty.to_xml('_')) == b"<_/>"
+
+
 def test_out_of_order_tolerance(voorbeeld_archiefstuk_xml):
     """Test parser tolerance on out of order elements"""
     tree = ET.parse(voorbeeld_archiefstuk_xml)
