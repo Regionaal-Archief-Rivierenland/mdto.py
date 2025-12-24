@@ -722,7 +722,7 @@ class Object(Serializable):
         ```
 
         Note:
-            The parser tolerates some schema violations. Specfically, it will
+            The parser tolerates some schema violations. Specifically, it will
             _not_ error if elements are out of order, or if a required
             element is missing. It _will_ error if tags are not potential
             children of a given element.
