@@ -320,7 +320,7 @@ class BegripGegevens(Serializable):
         """Sort dataclass fields by their order in the MDTO XSD."""
         fields = super()._mdto_ordered_fields()
         # swap order of begripBegrippenlijst and begripCode
-        return fields[:-2] + (fields[2], fields[1])
+        return (fields[0], fields[2], fields[1])
 
 
 @dataclass
@@ -853,38 +853,34 @@ class Informatieobject(Object, Serializable):
 
     def _mdto_ordered_fields(self) -> List[Field]:
         """Sort dataclass fields by their order in the MDTO XSD."""
-        sorting_mapping = {
-            "identificatie": 0,
-            "naam": 1,
-            "aggregatieniveau": 2,
-            "classificatie": 3,
-            "trefwoord": 4,
-            "omschrijving": 5,
-            "raadpleeglocatie": 6,
-            "dekkingInTijd": 7,
-            "dekkingInRuimte": 8,
-            "taal": 9,
-            "event": 10,
-            "waardering": 11,
-            "bewaartermijn": 12,
-            "informatiecategorie": 13,
-            "isOnderdeelVan": 14,
-            "bevatOnderdeel": 15,
-            "heeftRepresentatie": 16,
-            "aanvullendeMetagegevens": 17,
-            "gerelateerdInformatieobject": 18,
-            "archiefvormer": 19,
-            "betrokkene": 20,
-            "activiteit": 21,
-            "beperkingGebruik": 22,
-        }
-
-        return [
-            field
-            for field in sorted(
-                dataclasses.fields(self), key=lambda f: sorting_mapping[f.name]
-            )
-        ]
+        f = super()._mdto_ordered_fields()
+        # fmt: off
+        return (
+            f[0],   # identificatie
+            f[1],   # naam
+            f[5],   # aggregatieniveau
+            f[6],   # classificatie
+            f[7],   # trefwoord
+            f[8],   # omschrijving
+            f[9],   # raadpleeglocatie
+            f[10],  # dekkingInTijd
+            f[11],  # dekkingInRuimte
+            f[12],  # taal
+            f[13],  # event
+            f[4],   # waardering
+            f[14],  # bewaartermijn
+            f[15],  # informatiecategorie
+            f[16],  # isOnderdeelVan
+            f[17],  # bevatOnderdeel
+            f[18],  # heeftRepresentatie
+            f[19],  # aanvullendeMetagegevens
+            f[20],  # gerelateerdInformatieobject
+            f[2],   # archiefvormer
+            f[21],  # betrokkene
+            f[22],  # activiteit
+            f[3],   # beperkingGebruik
+        )
+        # fmt: on
 
     def to_xml(self) -> ET.ElementTree:
         """Transform Informatieobject into an XML tree with the following structure:
