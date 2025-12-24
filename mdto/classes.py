@@ -158,15 +158,15 @@ class Serializable:
             field_name = field.name
             field_value = getattr(self, field_name)
             # serialize field name and value, and add result to root element
-            self._process_dataclass_field(root_elem, field_name, field_value)
+            self._serialize_dataclass_field(root_elem, field_name, field_value)
 
         # return the tree
         return root_elem
 
-    def _process_dataclass_field(
+    def _serialize_dataclass_field(
         self, root_elem: ET.Element, field_name: str, field_value: Any
     ):
-        """Recursively process a dataclass field, and append its XML
+        """Recursively serialize a dataclass field, and append its XML
         representation to `root_elem`."""
 
         # skip empty fields
