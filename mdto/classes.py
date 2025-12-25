@@ -173,7 +173,7 @@ class Serializable:
         if field_value is None:
             return
 
-        # convert field_value to an iterable (if not already)
+        # listify
         if not isinstance(field_value, (list, tuple, set)):
             field_value = (field_value,)
 
@@ -182,8 +182,8 @@ class Serializable:
             if isinstance(val, Serializable):
                 root_elem.append(val.to_xml(field_name))
             else:
-                new_sub_elem = ET.SubElement(root_elem, field_name)
-                new_sub_elem.text = str(val)
+                # micro-optim: create subelem and .text content in one go
+                ET.SubElement(root_elem, field_name).text = str(val)
 
     @classmethod
     def _from_elem(cls, elem: ET.Element):
