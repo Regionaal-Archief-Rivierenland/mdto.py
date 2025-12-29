@@ -23,7 +23,6 @@ class ValidationError(TypeError):
     """Custom formatter for MDTO validation errors"""
 
     def __init__(self, field_path: list[str], msg: str, original_file: str = None):
-
         # print associated file, if given
         if original_file:
             msg += f" (original file: {original_file})"
@@ -184,6 +183,63 @@ class Serializable:
             else:
                 # micro-optim: create subelem and .text content in one go
                 ET.SubElement(root_elem, field_name).text = str(val)
+
+    def _is_empty(self) -> bool:
+        """Check if all values resolve to empty strings or None."""
+        values = [getattr(self, f.name) for f in dataclasses.fields(self)]
+        return all(v is None or not str(v) for v in values)
+
+    def clean_optional_empty_values(self) -> None:
+        """Recursively removes all empty optional fields from the tree.
+
+        This is not done automatically since empty values may reflect
+        logic flaws earlier in the pipeline. These possible flaws should
+        be scrutinized, rather than silently passed over.
+
+        Example:
+            ```python
+            >>> informatieobject.dekkingInRuimte = VerwijzingGegevens("", IdentificatieGegevens("", ""))
+            >>> informatieobject.clean_optional_empty_values()
+            >>> print(informatieobject.dekkingInRuimte)
+            None
+            ```
+
+        Note:
+            Edits objects in-place.
+        """
+
+        for field in dataclasses.fields(self):
+            field_name = field.name
+            field_value = getattr(self, field_name)
+            optional_field = field.default is None
+
+            if field_value is None:
+                continue
+
+            was_singleton = not isinstance(field_value, (list, tuple, set))
+            field_value = [field_value] if was_singleton else field_value
+
+            cleaned = []
+            for val in field_value:
+                if isinstance(val, Serializable):
+                    val.clean_optional_empty_values()
+                    # nuke whenever there are no remaining leaves
+                    if not val._is_empty():
+                        cleaned.append(val)
+                else:
+                    if val is not None and str(val):
+                        cleaned.append(val)
+
+            # ensure previously valid MDTO isn't rendered invalid by
+            # emptying a required field
+            if len(cleaned) == 0 and not optional_field:
+                cleaned = field_value[:1]
+
+            # TODO: maybe log removals?
+            if was_singleton:
+                setattr(self, field_name, cleaned[0] if cleaned else None)
+            else:
+                setattr(self, field_name, cleaned)
 
     @classmethod
     def _from_elem(cls, elem: ET.Element):
