@@ -22,10 +22,10 @@ ObjectT = TypeVar("ObjectT", bound="Object")
 class ValidationError(TypeError):
     """Custom formatter for MDTO validation errors"""
 
-    def __init__(self, field_path: list[str], msg: str, original_file: str = None):
-        # print associated file, if given
-        if original_file:
-            msg += f" (original file: {original_file})"
+    def __init__(self, field_path: list[str], msg: str, src_file: str = None):
+        # print associated source file, if given
+        if src_file:
+            msg += f" (source file: {src_file})"
 
         super().__init__(f"{'.'.join(field_path)}:\n  {msg}")
         self.field_path = field_path
@@ -77,7 +77,7 @@ class Serializable:
 
             cls_name = self.__class__.__name__
             _ValidationError = (
-                lambda msg: ValidationError([cls_name, field_name], msg, self._file)
+                lambda msg: ValidationError([cls_name, field_name], msg, self._srcfile)
                 if cls_name in ["Informatieobject", "Bestand"]
                 else ValidationError([field_name], msg)
             )
@@ -666,7 +666,7 @@ class Object(Serializable):
 
     def __post_init__(self):
         # adds possibility to associate MDTO objects with files
-        self._file: str | None = None
+        self._srcfile: str | None = None
 
     def to_xml(self, root: str) -> ET.ElementTree:
         """Transform Object into an XML tree with the following structure:
@@ -793,7 +793,7 @@ class Object(Serializable):
 
         Args:
             mdto_xml (TextIO | str): The MDTO XML file to construct a Bestand/Informatieobject from.
-             The path to this file is stored in instances' `._file` attribute for future reference.
+             The path to this file is stored in the `._srcfile` attribute for future reference.
 
         Returns:
             Bestand | Informatieobject: A new MDTO object
@@ -828,7 +828,7 @@ class Object(Serializable):
 
         # store original file path for later reference
         # TODO: normalize this so that it will always store an absolute path?
-        obj._file = mdto_xml.name if hasattr(mdto_xml, "write") else str(mdto_xml)
+        obj._srcfile = mdto_xml.name if hasattr(mdto_xml, "write") else str(mdto_xml)
         return obj
 
     def verwijzing(self) -> VerwijzingGegevens:
