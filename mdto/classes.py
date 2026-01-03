@@ -667,6 +667,7 @@ class Object(Serializable):
     def __post_init__(self):
         # adds possibility to associate MDTO objects with files
         self._srcfile: str | None = None
+        """adds possibility to associate MDTO objects with files"""
 
     def to_xml(self, root: str) -> ET.ElementTree:
         """Transform Object into an XML tree with the following structure:
@@ -834,7 +835,7 @@ class Object(Serializable):
     def verwijzing(self) -> VerwijzingGegevens:
         """
         Create a VerwijzingGegevens object that references this Informatieobject/Bestand.
-        Useful to populate `heeftRepresentatie` or `isOnderdeelVan`.
+        Useful to populate `heeftRepresentatie`, `isOnderdeelVan`, and `bevatOnderdeel`.
 
         Returns:
             VerwijzingGegevens: reference with the Informatieobject/Bestand's name and ID

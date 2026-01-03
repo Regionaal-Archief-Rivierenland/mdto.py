@@ -37,16 +37,17 @@ else:
         "\033[1;33m%s\033[1;0m" % logging.getLevelName(logging.WARNING),
     )
 
+
 @lru_cache(maxsize=1)
 def load_tooi_register_gemeenten() -> dict:
-    """Transforms the gemeente register JSON into a efficient lookup
-    table, and caches the result for subsequent calls.
+    """Transforms the gemeente register JSON into a lookup table, and
+    caches the result for subsequent calls.
 
     Caching this table makes a big difference in performance.
 
     Returns:
-        dict: bidirectional lookup table that maps TOOI gemeentenamen to
-              TOOI codes, and vice versa
+        dict: bidirectional lookup table that maps TOOI gemeentenamen
+              to TOOI codes, and vice versa
 
     """
     import importlib.resources  # importing here improves initialization speed
