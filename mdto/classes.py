@@ -1037,7 +1037,7 @@ class Bestand(Object, Serializable):
         as a PDF.
 
         This function differs from calling Bestand() directly in that it
-        *infers* most information for you (checksum, PRONOM info, etc.) by
+        infers most information for you (checksum, PRONOM info, etc.) by
         inspecting `file`. `<identificatie>` is set to a UUID.
 
         Args:
