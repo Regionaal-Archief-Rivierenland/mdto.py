@@ -176,6 +176,9 @@ def mimetypeinfo(file: str | Path) -> BegripGegevens:
     Args:
         file (str | Path): Path to the file to inspect
 
+    Raises:
+        RuntimeError: failed to detect mimetype info
+
     Returns:
         BegripGegevens: Object with the following properties:
           - `begripLabel`: The file's MIME subtype
