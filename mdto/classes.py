@@ -1064,6 +1064,9 @@ class Bestand(Object, Serializable):
          bestand.save("vergunning.pdf.bestand.mdto.xml")
          ```
 
+        Raises:
+            RuntimeError: PRONOM or mimetype detection failed.
+
         Returns:
             Bestand: new Bestand object
         """
