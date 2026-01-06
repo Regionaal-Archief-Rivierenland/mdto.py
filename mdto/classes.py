@@ -1030,7 +1030,7 @@ class Bestand(Object, Serializable):
     def from_file(
         cls,
         file: str | TextIO,
-        isrepresentatievan: VerwijzingGegevens | str | TextIO,
+        isRepresentatieVan: VerwijzingGegevens | str | TextIO,
         use_mimetype: bool = False,
     ) -> Self:
         """Convenience function for creating a Bestand object from a file, such
@@ -1042,7 +1042,7 @@ class Bestand(Object, Serializable):
 
         Args:
             file (str | TextIO): the file the Bestand object represents
-            isrepresentatievan (TextIO | str | VerwijzingGegevens): a XML
+            isRepresentatieVan (TextIO | str | VerwijzingGegevens): a XML
               file containing an informatieobject, or a
               VerwijzingGegevens referencing an informatieobject.
               Used to construct <isRepresentatieVan>.
@@ -1055,7 +1055,7 @@ class Bestand(Object, Serializable):
          verwijzing_obj = VerwijzingGegevens("Ontwerpstudie Dwarsdoorsneden kust")
          bestand = Bestand.from_file(
               "vergunning.pdf",
-              isrepresentatievan=verwijzing_obj  # or pass the actual file
+              isRepresentatieVan=verwijzing_obj  # or pass the actual file
          )
 
          # change identificatiekenmerk, if desired (defaults to a UUID)
@@ -1083,18 +1083,18 @@ class Bestand(Object, Serializable):
             bestandsformaat = helpers.mimetypeinfo(file.name)
 
         # file or file path?
-        if isinstance(isrepresentatievan, (str, Path)) or hasattr(
-            isrepresentatievan, "read"
+        if isinstance(isRepresentatieVan, (str, Path)) or hasattr(
+            isRepresentatieVan, "read"
         ):
-            informatieobject_file = helpers.process_file(isrepresentatievan)
+            informatieobject_file = helpers.process_file(isRepresentatieVan)
             # Construct verwijzing from informatieobject file
             verwijzing_obj = helpers.detect_verwijzing(informatieobject_file)
             informatieobject_file.close()
-        elif isinstance(isrepresentatievan, VerwijzingGegevens):
-            verwijzing_obj = isrepresentatievan
+        elif isinstance(isRepresentatieVan, VerwijzingGegevens):
+            verwijzing_obj = isRepresentatieVan
         else:
             raise TypeError(
-                "isrepresentatievan must either be a path, file, or a VerwijzingGegevens object."
+                "isRepresentatieVan must either be a path, file, or a VerwijzingGegevens object."
             )
 
         file.close()
