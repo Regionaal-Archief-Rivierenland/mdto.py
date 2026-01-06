@@ -1052,7 +1052,7 @@ class Bestand(Object, Serializable):
         Example:
          ```python
 
-         verwijzing_obj = VerwijzingGegevens("vergunning.mdto.xml")
+         verwijzing_obj = VerwijzingGegevens("Ontwerpstudie Dwarsdoorsneden kust")
          bestand = Bestand.from_file(
               "vergunning.pdf",
               isrepresentatievan=verwijzing_obj  # or pass the actual file
