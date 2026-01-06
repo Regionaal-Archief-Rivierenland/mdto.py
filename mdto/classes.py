@@ -465,7 +465,7 @@ class ChecksumGegevens(Serializable):
 
     @classmethod
     def from_file(
-        cls, file_or_filename: TextIO | str, algorithm: str = "sha256"
+        cls, file_or_filename: str | TextIO, algorithm: str = "sha256"
     ) -> Self:
         """Convience function for creating ChecksumGegegevens objects.
 
@@ -482,7 +482,7 @@ class ChecksumGegevens(Serializable):
             ```
 
         Args:
-            file_or_filename (TextIO | str): file-like object to generate checksum data for
+            file_or_filename (str | TextIO): file-like object to generate checksum data for
             algorithm (Optional[str]): checksum algorithm to use; defaults to sha256.
              For valid values, see https://docs.python.org/3/library/hashlib.html
 
@@ -793,7 +793,7 @@ class Object(Serializable):
              violations are tolerated; see above)
 
         Args:
-            mdto_xml (TextIO | str): The MDTO XML file to construct a Bestand/Informatieobject from.
+            mdto_xml (str | TextIO): The MDTO XML file to construct a Bestand/Informatieobject from.
              The path to this file is stored in the `._srcfile` attribute for future reference.
 
         Returns:
@@ -1029,8 +1029,8 @@ class Bestand(Object, Serializable):
     @classmethod
     def from_file(
         cls,
-        file: TextIO | str,
-        isrepresentatievan: VerwijzingGegevens | TextIO | str,
+        file: str | TextIO,
+        isrepresentatievan: VerwijzingGegevens | str | TextIO,
         use_mimetype: bool = False,
     ) -> Self:
         """Convenience function for creating a Bestand object from a file, such
@@ -1041,7 +1041,7 @@ class Bestand(Object, Serializable):
         inspecting `file`. `<identificatie>` is set to a UUID.
 
         Args:
-            file (TextIO | str): the file the Bestand object represents
+            file (str | TextIO): the file the Bestand object represents
             isrepresentatievan (TextIO | str | VerwijzingGegevens): a XML
               file containing an informatieobject, or a
               VerwijzingGegevens referencing an informatieobject.
