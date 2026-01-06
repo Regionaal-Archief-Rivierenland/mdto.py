@@ -134,7 +134,7 @@ Informatieobject(naam='Verlenen kapvergunning Hooigracht 21 Den Haag',  identifi
 >
 > bestand = Bestand.from_file(
 >         file="vergunning.pdf",  # bestand waarvoor technische metagegevens moeten worden aangemaakt
->         isrepresentatievan=obj_verwijzing
+>         isRepresentatieVan=obj_verwijzing
 >      )
 >
 > # Sla op als XML bestand
