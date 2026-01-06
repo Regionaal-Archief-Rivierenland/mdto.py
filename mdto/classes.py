@@ -762,7 +762,7 @@ class Object(Serializable):
         xml.write(file_or_filename, **(lxml_defaults | lxml_kwargs))
 
     @classmethod
-    def open(cls: Type[ObjectT], mdto_xml: TextIO | str) -> ObjectT:
+    def open(cls: Type[ObjectT], mdto_xml: str | TextIO) -> ObjectT:
         """Construct a Informatieobject/Bestand object from a MDTO XML file.
 
         Example:
