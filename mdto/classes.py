@@ -1047,7 +1047,7 @@ class Bestand(Object, Serializable):
               VerwijzingGegevens referencing an informatieobject.
               Used to construct <isRepresentatieVan>.
             use_mimetype (Optional[bool]): populate `<bestandsformaat>`
-              with mimetype instead of PRONOM info
+              with mimetype instead of PRONOM info. Defaults to False.
 
         Example:
          ```python
