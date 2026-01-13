@@ -185,11 +185,17 @@ def mimetypeinfo(file: str | Path) -> BegripGegevens:
           - `begripCode`: The file's MIME type (top-level type + subtype)
           - `begripBegrippenLijst`: A reference to the IANA registry
     """
+    import importlib
     from mdto.gegevensgroepen import BegripGegevens, VerwijzingGegevens
 
     # strict means: use only mimetypes registered with the IANA
     # this should be .guess_file_type when py3.13 releases
-    mimetype, _ = mimetypes.guess_type(file, strict=False)
+    if importlib.util.find_spec('magic'):
+        import magic
+        mimetype = magic.from_file(file, mime=True)
+    else:
+        # strict means: use only mimetypes registered with the IANA
+        mimetype, _ = mimetypes.guess_type(file, strict=False)
 
     if mimetype is None:
         raise RuntimeError(f"failed to detect MIME type information about {file}")

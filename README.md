@@ -43,6 +43,9 @@ Naast gebruiksvriendelijkheid, streeft `mdto.py` ook een 100% correcte implement
 ## Afhankelijkheden
 
 * Python 3.11 of nieuwer
+* [`python-magic`](https://github.com/ahupp/python-magic) (optioneel; voor accuratere mimetype-detectie mbv `libmagic`)
+
+Overige python-pakketen worden automatisch geinstalleerd als je de instructies hieronder volgt.
 
 ## Systeem-brede installatie
 

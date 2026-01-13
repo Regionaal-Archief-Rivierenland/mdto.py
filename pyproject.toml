@@ -22,6 +22,9 @@ dependencies = [
     "lxml",
 ]
 
+[project.optional-dependencies]
+libmagic = ["python-magic"]
+
 [project.urls]
 Homepage = "https://github.com/Regionaal-Archief-Rivierenland/mdto.py"
 Issues = "https://github.com/Regionaal-Archief-Rivierenland/mdto.py/issues"
