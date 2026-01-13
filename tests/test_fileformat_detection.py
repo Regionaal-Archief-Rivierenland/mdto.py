@@ -13,15 +13,12 @@ def test_pronom_siegfried(voorbeeld_archiefstuk_xml):
     assert expected == got
 
 
-def test_mimetype(voorbeeld_archiefstuk_xml):
+def test_mimetype(voorbeeld_pdf_file):
     """Test mimetype detection"""
     expected = BegripGegevens(
-        "xml", VerwijzingGegevens("IANA Media types"), "application/xml"
+        "pdf", VerwijzingGegevens("IANA Media types"), "application/pdf"
     )
-    got = mimetypeinfo(voorbeeld_archiefstuk_xml)
-    # windows favors "text/xml"
-    if got.begripCode == "text/xml":
-        got.begripCode = "application/xml"
+    got = mimetypeinfo(voorbeeld_pdf_file)
 
     assert expected == got
 
