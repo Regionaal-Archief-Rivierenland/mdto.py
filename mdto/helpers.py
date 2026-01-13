@@ -189,7 +189,7 @@ def mimetypeinfo(file: str | Path) -> BegripGegevens:
 
     # strict means: use only mimetypes registered with the IANA
     # this should be .guess_file_type when py3.13 releases
-    mimetype, _ = mimetypes.guess_type(file, strict=True)
+    mimetype, _ = mimetypes.guess_type(file, strict=False)
 
     if mimetype is None:
         raise RuntimeError(f"failed to detect MIME type information about {file}")
