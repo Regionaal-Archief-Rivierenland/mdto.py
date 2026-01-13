@@ -1077,7 +1077,7 @@ class Bestand(Object, Serializable):
 
         # set <naam> to basename
         naam = file.name
-        omvang = file.lstat().st_size
+        omvang = file.stat().st_size
         checksum = ChecksumGegevens.from_file(file)
 
         if use_mimetype:
