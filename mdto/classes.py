@@ -1,6 +1,5 @@
 import dataclasses
 import hashlib
-import os
 import uuid
 import re
 from dataclasses import Field, dataclass
@@ -1070,11 +1069,15 @@ class Bestand(Object, Serializable):
         Returns:
             Bestand: new Bestand object
         """
-        file = helpers.process_file(file)
+        # file-like object?
+        if hasattr(file, "read"):
+            file = Path(file.name)
+        else:
+            file = Path(file)
 
         # set <naam> to basename
-        naam = os.path.basename(file.name)
-        omvang = os.path.getsize(file.name)
+        naam = file.name
+        omvang = file.lstat().st_size
         checksum = ChecksumGegevens.from_file(file)
 
         if not use_mimetype:
@@ -1096,8 +1099,6 @@ class Bestand(Object, Serializable):
             raise TypeError(
                 "isRepresentatieVan must either be a path, file, or a VerwijzingGegevens object."
             )
-
-        file.close()
 
         return cls(
             IdentificatieGegevens.uuid(),
