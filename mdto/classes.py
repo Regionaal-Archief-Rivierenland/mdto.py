@@ -1080,10 +1080,10 @@ class Bestand(Object, Serializable):
         omvang = file.lstat().st_size
         checksum = ChecksumGegevens.from_file(file)
 
-        if not use_mimetype:
-            bestandsformaat = helpers.pronominfo(file.name)
+        if use_mimetype:
+            bestandsformaat = helpers.mimetypeinfo(file)
         else:
-            bestandsformaat = helpers.mimetypeinfo(file.name)
+            bestandsformaat = helpers.pronominfo(file)
 
         # file or file path?
         if isinstance(isRepresentatieVan, (str, Path)) or hasattr(
