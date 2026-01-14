@@ -341,7 +341,9 @@ class VerwijzingGegevens(Serializable):
             tooi_code = tooi_register.get(
                 gemeentenaam_of_tooi_code.lower().removeprefix("gemeente ")
             )
-            tooi_naam = gemeentenaam_of_tooi_code
+            # get pretty name while we're at it
+            if tooi_code:
+                tooi_naam = f"Gemeente {tooi_register[tooi_code]}"
 
         if tooi_naam and tooi_code:
             return cls(
