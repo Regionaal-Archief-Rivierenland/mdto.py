@@ -188,17 +188,23 @@ def mimetypeinfo(file: str | Path) -> BegripGegevens:
     import importlib
     from mdto.gegevensgroepen import BegripGegevens, VerwijzingGegevens
 
-    # strict means: use only mimetypes registered with the IANA
-    # this should be .guess_file_type when py3.13 releases
-    if importlib.util.find_spec('magic'):
+    if importlib.util.find_spec("magic"):
         import magic
         mimetype = magic.from_file(file, mime=True)
     else:
         # strict means: use only mimetypes registered with the IANA
+        # this should be .guess_file_type when py3.13 releases
         mimetype, _ = mimetypes.guess_type(file, strict=False)
 
     if mimetype is None:
-        raise RuntimeError(f"failed to detect MIME type information about {file}")
+        # libmagic never returns None, so know the user has yet to install it.
+        # TODO: maybe link to mdto.py's installation instructions?
+        raise RuntimeError(
+            f"failed to detect MIME type information about {file}. "
+            "Hint: install the python-magic package to get greater MIME type coverage."
+        )
+    elif mimetype.endswith("empty"):
+        raise RuntimeError(f"{file} appears to be an empty file")
 
     _, subtype = mimetype.split("/")
 
