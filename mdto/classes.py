@@ -1075,15 +1075,14 @@ class Bestand(Object, Serializable):
         else:
             file = Path(file)
 
-        # set <naam> to basename
-        naam = file.name
-        omvang = file.stat().st_size
-        checksum = ChecksumGegevens.from_file(file)
-
         if use_mimetype:
             bestandsformaat = helpers.mimetypeinfo(file)
         else:
             bestandsformaat = helpers.pronominfo(file)
+
+        naam = file.name  # set <naam> to basename
+        omvang = file.stat().st_size
+        checksum = ChecksumGegevens.from_file(file)
 
         # file or file path?
         if isinstance(isRepresentatieVan, (str, Path)) or hasattr(
