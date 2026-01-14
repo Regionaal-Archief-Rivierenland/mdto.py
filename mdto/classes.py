@@ -334,20 +334,17 @@ class VerwijzingGegevens(Serializable):
         if match := re.fullmatch(r"(gm)?(\d{4})", gemeentenaam_of_tooi_code.lower()):
             # get name from code
             tooi_code = match.group(2)
-            if tooi_naam := tooi_register.get(tooi_code):
-                tooi_naam = f"Gemeente {tooi_naam}"
+            tooi_naam = tooi_register.get(tooi_code)
         else:
             # get code from name
             tooi_code = tooi_register.get(
                 gemeentenaam_of_tooi_code.lower().removeprefix("gemeente ")
             )
-            # get pretty name while we're at it
-            if tooi_code:
-                tooi_naam = f"Gemeente {tooi_register[tooi_code]}"
+            tooi_naam = tooi_register[tooi_code] if tooi_code else None
 
         if tooi_naam and tooi_code:
             return cls(
-                tooi_naam,
+                f"Gemeente {tooi_naam}",
                 IdentificatieGegevens(
                     f"gm{tooi_code}", "TOOI register gemeenten compleet"
                 ),
