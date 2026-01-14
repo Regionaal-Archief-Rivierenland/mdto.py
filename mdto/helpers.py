@@ -198,10 +198,11 @@ def mimetypeinfo(file: str | Path) -> BegripGegevens:
 
     if mimetype is None:
         # libmagic never returns None, so know the user has yet to install it.
+        #(https://github.com/ahupp/python-magic/issues/252#issuecomment-949082143)
         # TODO: maybe link to mdto.py's installation instructions?
         raise RuntimeError(
             f"failed to detect MIME type information about {file}. "
-            "Hint: install the python-magic package to get greater MIME type coverage."
+            "Hint: install the python-magic package to get more comprehensive coverage."
         )
     elif mimetype.endswith("empty"):
         raise RuntimeError(f"{file} appears to be an empty file")
