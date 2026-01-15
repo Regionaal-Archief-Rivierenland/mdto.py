@@ -193,7 +193,6 @@ def mimetypeinfo(file: str | Path) -> BegripGegevens:
         mimetype = magic.from_file(file, mime=True)
     else:
         # strict means: use only mimetypes registered with the IANA
-        # this should be .guess_file_type when py3.13 releases
         mimetype, _ = mimetypes.guess_type(file, strict=False)
 
     if mimetype is None:
