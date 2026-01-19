@@ -25,7 +25,8 @@ if TYPE_CHECKING:
 # setup logging
 logger = logging.getLogger("mdto.py")
 
-if os.environ.get("MDTO_QUIET"):
+quiet = os.environ.get("MDTO_QUIET")
+if quiet not in ["false", "0"]:
     logger.addHandler(logging.NullHandler())
 else:
     handler = logging.StreamHandler()
