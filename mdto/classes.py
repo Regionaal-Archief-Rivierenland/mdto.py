@@ -19,7 +19,7 @@ ObjectT = TypeVar("ObjectT", bound="Object")
 
 
 class ValidationError(TypeError):
-    """Custom formatter for MDTO validation errors"""
+    """Custom formatter for MDTO validation errors."""
 
     def __init__(self, field_path: list[str], msg: str, src_file: str = None):
         # print associated source file, if given
@@ -32,7 +32,7 @@ class ValidationError(TypeError):
 
 
 class DateValidationError(ValidationError):
-    """Custom formatter for MDTO date(time) validation errors"""
+    """Custom formatter for MDTO date(time) validation errors."""
 
     def __init__(self, field_path: list[str], date: str, fmts: list[str]):
         fmts.sort()
