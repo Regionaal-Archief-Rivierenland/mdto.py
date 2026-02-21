@@ -173,7 +173,7 @@ for xmlfile in Path(".").rglob("*.bestand.mdto.xml"):
     bestand_obj = Bestand.open(xmlfile)
 
     # vind naam + path van het te updaten bestand
-    filename = bestand.naam  # in de regel bevat <naam> de bestandsnaam
+    filename = bestand_obj.naam  # in de regel bevat <naam> de bestandsnaam
     filepath = xmlfile.parent / filename
 
     # maak een nieuwe checksum
