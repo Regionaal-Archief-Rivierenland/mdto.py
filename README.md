@@ -169,18 +169,18 @@ from pathlib import Path
 
 
 # itereer door alle Bestand XMLs:
-for bestand_path in Path(".").rglob("*.bestand.mdto.xml"):
-    bestand = Bestand.open(bestand_path)
+for xmlfile in Path(".").rglob("*.bestand.mdto.xml"):
+    bestand = Bestand.open(xmlfile)
 
     # vind naam + path van het te updaten bestand
     filename = bestand.naam  # in de regel bevat <naam> de bestandsnaam
-    filepath = bestand_path.parent / filename
+    filepath = xmlfile.parent / filename
 
     # maak een nieuwe checksum
     bestand.checksum = ChecksumGegegevens.from_file(filepath)
 
     # schrijf geüpdatet Bestand object terug naar de oorspronkelijke XML file
-    bestand.save(bestand_path)
+    bestand.save(xmlfile)
 ```
 
 ## Autocompletion & documentatie in je teksteditor/IDE
