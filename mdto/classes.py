@@ -151,14 +151,12 @@ class Serializable:
         # get dataclass fields, but in the order required by the MDTO XSD
         fields = self._mdto_ordered_fields()
 
-        # process all fields in dataclass
         for field in fields:
             field_name = field.name
             field_value = getattr(self, field_name)
             # serialize field name and value, and add result to root element
             self._serialize_dataclass_field(root_elem, field_name, field_value)
 
-        # return the tree
         return root_elem
 
     def _serialize_dataclass_field(
