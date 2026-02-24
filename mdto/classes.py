@@ -154,32 +154,24 @@ class Serializable:
         for field in fields:
             field_name = field.name
             field_value = getattr(self, field_name)
-            # serialize field name and value, and add result to root element
-            self._serialize_dataclass_field(root_elem, field_name, field_value)
+
+            # skip empty fields
+            if field_value is None:
+                continue
+
+            # listify
+            if not isinstance(field_value, (list, tuple, set)):
+                field_value = (field_value,)
+
+            # serialize sequence of primitives and *Gegevens objects
+            for val in field_value:
+                if isinstance(val, Serializable):
+                    root_elem.append(val.to_xml(field_name))
+                else:
+                    # micro-optim: create subelem and .text content in one go
+                    ET.SubElement(root_elem, field_name).text = str(val)
 
         return root_elem
-
-    def _serialize_dataclass_field(
-        self, root_elem: ET.Element, field_name: str, field_value: Any
-    ):
-        """Recursively serialize a dataclass field, and append its XML
-        representation to `root_elem`."""
-
-        # skip empty fields
-        if field_value is None:
-            return
-
-        # listify
-        if not isinstance(field_value, (list, tuple, set)):
-            field_value = (field_value,)
-
-        # serialize sequence of primitives and *Gegevens objects
-        for val in field_value:
-            if isinstance(val, Serializable):
-                root_elem.append(val.to_xml(field_name))
-            else:
-                # micro-optim: create subelem and .text content in one go
-                ET.SubElement(root_elem, field_name).text = str(val)
 
     def _is_empty(self) -> bool:
         """Check if all values resolve to empty strings or None."""
