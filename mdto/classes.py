@@ -656,7 +656,7 @@ class Object(Serializable):
         self._srcfile: str | None = None
         """adds possibility to associate MDTO objects with files"""
 
-    def to_xml(self, root: str) -> ET.ElementTree:
+    def to_xml(self, root: str) -> ET.Element:
         """Transform Object into an XML tree with the following structure:
 
         ```xml
@@ -689,9 +689,8 @@ class Object(Serializable):
         # convert all dataclass fields to their XML representation
         children = super().to_xml(root)
         mdto.append(children)
+        return mdto
 
-        tree = ET.ElementTree(mdto)
-        return tree
 
     def validate(self) -> None:
         super().validate()
@@ -734,6 +733,8 @@ class Object(Serializable):
         # (doing this in to_xml would be slow, and perhaps unexpected)
         self.validate()
         xml = self.to_xml()
+        # lxml's .write wants an ElementTree object
+        tree = ET.ElementTree(xml)
 
         if not minify:
             # match MDTO voorbeeld bestanden in terms of whitespace
@@ -746,7 +747,7 @@ class Object(Serializable):
         }
 
         # `|` is a union operator; it merges two dicts, with right-hand side taking precedence
-        xml.write(file_or_filename, **(lxml_defaults | lxml_kwargs))
+        tree.write(file_or_filename, **(lxml_defaults | lxml_kwargs))
 
     @classmethod
     def open(cls: Type[ObjectT], mdto_xml: str | TextIO) -> ObjectT:
@@ -926,7 +927,7 @@ class Informatieobject(Object, Serializable):
         )
         # fmt: on
 
-    def to_xml(self) -> ET.ElementTree:
+    def to_xml(self) -> ET.Element:
         """Transform Informatieobject into an XML tree with the following structure:
 
         ```xml
