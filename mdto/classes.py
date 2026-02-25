@@ -38,9 +38,8 @@ class DateValidationError(ValidationError):
         fmts.sort()
         # Format bullet list
         supported_fmts = "\n".join(f"  • {fmt}" for fmt in fmts)
-        field_name = field_path[-1]
         msg = (
-            f"Date '{date}' is incorrectly formatted or non-existent; {field_name} supports:\n\n"
+            f"Date '{date}' is incorrectly formatted or non-existent; {'.'.join(field_path)} supports:\n\n"
             f"{supported_fmts}\n\n"
             "  Each format may include timezone info, e.g. '+01:00' or 'Z'"
         )
