@@ -52,6 +52,8 @@ class Serializable:
     """Provides validate() and to_xml() methods for converting MDTO dataclasses
     to valid MDTO XML."""
 
+    # TODO: not sure what this extending looks like in practice, and if its
+    # easy enough to keep the tip in the docstring?
     def validate(self) -> None:
         """Validate the object's fields against the rules of the MDTO
         schema. Additional validation logic can be incorporated by
