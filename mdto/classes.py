@@ -53,12 +53,9 @@ class Serializable:
     to valid MDTO XML."""
 
     def validate(self) -> None:
-        """Validate the object's fields against the MDTO schema. Additional
-        validation logic can be incorporated by extending this method in a
-        subclass.
-
-        Note:
-           Typing information is infered based on type hints.
+        """Validate the object's fields against the rules of the MDTO
+        schema. Additional validation logic can be incorporated by
+        extending this method in a subclass.
 
         Raises:
             ValidationError: field violates the MDTO schema
