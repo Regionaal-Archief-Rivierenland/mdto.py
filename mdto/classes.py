@@ -47,7 +47,7 @@ class DateValidationError(ValidationError):
 
 
 # TODO: update name and docstring to be more descriptive? Now, this class does more than just serialize
-# or maybe refactor?
+# Or maybe refactor completely?
 class Serializable:
     """Provides validate() and to_xml() methods for converting MDTO dataclasses
     to valid MDTO XML."""
