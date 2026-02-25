@@ -18,13 +18,14 @@ def serialization_chain(xmlfile: str) -> str:
     informatieobject_of_bestand = mdto.open(xmlfile)
 
     # Serialize back to XML
-    output_tree = informatieobject_of_bestand.to_xml()
+    xml = informatieobject_of_bestand.to_xml()
+    tree = ET.ElementTree(xml)
     # indent the tree with a tab to match what mdto does
-    ET.indent(output_tree, space="\t")
+    ET.indent(tree, space="\t")
 
     return (
         ET.tostring(
-            output_tree.getroot(),
+            tree,
             doctype='<?xml version="1.0" encoding="UTF-8"?>',
             encoding="UTF-8",
         ).decode("UTF-8")
