@@ -143,7 +143,7 @@ class Serializable:
             root (str): name of the new root tag
 
         Returns:
-            ET.Element: XML representation of object with new root tag
+            ET.Element: XML serialization of object with new root tag
         """
         root_elem = ET.Element(root)
         # get dataclass fields, but in the order required by the MDTO XSD
@@ -667,7 +667,7 @@ class Object(Serializable):
         </MDTO>
         ```
         Returns:
-            ET.ElementTree: XML tree representing the Object
+            ET.Element: XML seralization of the MDTO-object
         """
 
         # construct attributes of <MDTO>
