@@ -40,6 +40,9 @@ Naast gebruiksvriendelijkheid, streeft `mdto.py` ook een 100% correcte implement
 
 # 💿 Installatie
 
+> [!WARNING]
+> `mdto.py` is nog actief in ontwikkeling, en krijgt pas een stabiele API bij de 1.0 release. Hierdoor is er een kans dat je code na het updaten van deze `mdto.py` stopt met werken.
+
 ## Afhankelijkheden
 
 * Python 3.11 of nieuwer
