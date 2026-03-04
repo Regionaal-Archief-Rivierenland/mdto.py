@@ -727,7 +727,9 @@ class Object(Serializable):
         """
         # lxml wants files in binary mode, so pass along a file's raw byte stream
         if hasattr(file_or_filename, "write"):
-            file_or_filename = file_or_filename.buffer.raw
+            outfile = file_or_filename.buffer.raw
+        else:
+            outfile = file_or_filename
 
         # validate before serialization to ensure correctness
         # (doing this in to_xml would be slow, and perhaps unexpected)
@@ -747,7 +749,14 @@ class Object(Serializable):
         }
 
         # `|` is a union operator; it merges two dicts, with right-hand side taking precedence
-        tree.write(file_or_filename, **(lxml_defaults | lxml_kwargs))
+        tree.write(outfile, **(lxml_defaults | lxml_kwargs))
+
+        # associate MDTO object with file
+        self._srcfile = (
+            file_or_filename.name
+            if hasattr(file_or_filename, "write")
+            else str(file_or_filename)
+        )
 
     @classmethod
     def open(cls: Type[ObjectT], mdto_xml: str | TextIO) -> ObjectT:
