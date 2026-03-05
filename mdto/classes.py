@@ -124,7 +124,7 @@ class Serializable:
                 if field_value is None or len(str(field_value)) == 0:
                     raise _ValidationError("field value must not be empty or None")
 
-    def _mdto_ordered_fields(self) -> list[Field]:
+    def _mdto_ordered_fields(self) -> tuple[Field]:
         """Sort dataclass fields by their order in the MDTO XSD.
 
         This method should be overridden when the order of fields in
@@ -359,7 +359,7 @@ class BegripGegevens(Serializable):
     begripBegrippenlijst: VerwijzingGegevens
     begripCode: str = None
 
-    def _mdto_ordered_fields(self) -> list[Field]:
+    def _mdto_ordered_fields(self) -> tuple[Field]:
         """Sort dataclass fields by their order in the MDTO XSD."""
         fields = super()._mdto_ordered_fields()
         # swap order of begripBegrippenlijst and begripCode
@@ -905,7 +905,7 @@ class Informatieobject(Object, Serializable):
     betrokkene: BetrokkeneGegevens | List[BetrokkeneGegevens] = None
     activiteit: VerwijzingGegevens | List[VerwijzingGegevens] = None
 
-    def _mdto_ordered_fields(self) -> List[Field]:
+    def _mdto_ordered_fields(self) -> tuple[Field]:
         """Sort dataclass fields by their order in the MDTO XSD."""
         f = super()._mdto_ordered_fields()
         # fmt: off
@@ -989,7 +989,7 @@ class Bestand(Object, Serializable):
     isRepresentatieVan: VerwijzingGegevens
     URLBestand: str = None
 
-    def _mdto_ordered_fields(self) -> List[Field]:
+    def _mdto_ordered_fields(self) -> tuple[Field]:
         """Sort dataclass fields by their order in the MDTO XSD."""
         fields = super()._mdto_ordered_fields()
         # swap order of isRepresentatieVan and URLbestand
@@ -1175,7 +1175,6 @@ def _construct_deserialization_classmethods():
         for field in dataclasses.fields(cls):
             field_name = field.name
             field_type = resolve_type(field.type)
-
             if field_type is str:
                 parsers[field_name] = parse_text
             elif field_type is IdentificatieGegevens:
