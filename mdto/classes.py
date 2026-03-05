@@ -1026,7 +1026,7 @@ class Bestand(Object, Serializable):
     @classmethod
     def from_file(
         cls,
-        file: str | TextIO,
+        file_or_filename: str | TextIO,
         isRepresentatieVan: VerwijzingGegevens | str | TextIO,
         use_mimetype: bool = False,
     ) -> Self:
@@ -1038,7 +1038,7 @@ class Bestand(Object, Serializable):
         inspecting `file`. `<identificatie>` is set to a UUID.
 
         Args:
-            file (str | TextIO): the file the Bestand object represents
+            file_or_filename (str | TextIO): the file the Bestand object represents
             isRepresentatieVan (TextIO | str | VerwijzingGegevens): a XML
               file containing an informatieobject, or a
               VerwijzingGegevens referencing an informatieobject.
@@ -1068,19 +1068,19 @@ class Bestand(Object, Serializable):
             Bestand: new Bestand object
         """
         # file-like object?
-        if hasattr(file, "read"):
-            file = Path(file.name)
+        if hasattr(file_or_filename, "read"):
+            path = Path(file_or_filename.name)
         else:
-            file = Path(file)
+            path = Path(file_or_filename)
 
         if use_mimetype:
-            bestandsformaat = helpers.mimetypeinfo(file)
+            bestandsformaat = helpers.mimetypeinfo(path)
         else:
-            bestandsformaat = helpers.pronominfo(file)
+            bestandsformaat = helpers.pronominfo(path)
 
-        naam = file.name  # set <naam> to basename
-        omvang = file.stat().st_size
-        checksum = ChecksumGegevens.from_file(file)
+        naam = path.name  # set <naam> to basename
+        omvang = path.stat().st_size
+        checksum = ChecksumGegevens.from_file(path)
 
         # file or file path?
         if isinstance(isRepresentatieVan, (str, Path)) or hasattr(
