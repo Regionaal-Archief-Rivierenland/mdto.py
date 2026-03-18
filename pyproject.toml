@@ -1,5 +1,5 @@
 [project]
-name = "mdto.py"
+name = "mdto"
 version = "0.0.1"
 authors = [
   { name="Rijnder Wever", email="rwever@rarivierland.nl"},
@@ -21,6 +21,9 @@ dependencies = [
     "pygfried",
     "lxml",
 ]
+
+[project.optional-dependencies]
+libmagic = ["python-magic"]
 
 [project.urls]
 Homepage = "https://github.com/Regionaal-Archief-Rivierenland/mdto.py"

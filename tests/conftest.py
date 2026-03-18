@@ -9,7 +9,7 @@ from mdto.gegevensgroepen import *
 
 xsd_filename = "MDTO-XML1.0.1.xsd"
 xsd_url = f"https://www.nationaalarchief.nl/mdto/{xsd_filename}"
-xml_url = "https://www.nationaalarchief.nl/sites/default/files/field-file/MDTO-XML%201.0.1%20Voorbeelden%20%283%29.zip"
+xml_url = "https://www.nationaalarchief.nl/sites/default/files/field-file/Documents.zip"
 
 # list of example files in the zip file
 prefix = "MDTO-XML 1.0.1 Voorbeeld "
@@ -19,6 +19,8 @@ xml_voorbeelden = [
     f"{prefix}Serie Informatieobject.xml",
     f"{prefix}Bestand.xml",
 ]
+
+pdf_filename = "DC-2015_1753-1.PDF"
 
 
 def download_mdto_voorbeelden(target_dir):
@@ -38,6 +40,18 @@ def download_mdto_xsd(target_dir):
 
     # should be response.text and open(file, "w"), but NA is sending incorrect header information
     with open(target_dir / xsd_filename, "wb") as f:
+        f.write(response.content)
+
+
+def download_example_pdf(target_dir):
+    """Download the actual PDF file associated with the main informatieobject."""
+    # TODO: this URL is not the value in <URLBestand>; that incorrectly leads to a viewer
+    pdf_url = "https://service.archief.nl/gaf/api/file/v1/original/99ea4571-1d07-48aa-bfd3-ead9f5779cde"
+
+    response = requests.get(pdf_url)
+    response.raise_for_status()  # raise error if download failed
+
+    with open(target_dir / pdf_filename, "wb") as f:
         f.write(response.content)
 
 
@@ -66,6 +80,17 @@ def mdto_example_files(pytestconfig, tmp_path_factory) -> dict:
         if (cache_path / xml_file).exists()
     }
 
+    # replace extraneous tab char in original
+    archiefstuk = cache_path / f"{prefix}Archiefstuk Informatieobject.xml"
+    with open(archiefstuk, "r+", encoding="utf-8") as f:
+        archiefstuk_xml = f.read()
+        archiefstuk_xml = archiefstuk_xml.replace(
+            "</aanvullendeMetagegevens>	", "</aanvullendeMetagegevens>"
+        )
+        f.seek(0)
+        f.write(archiefstuk_xml)
+        f.truncate()
+
     return xml_file_paths
 
 
@@ -84,7 +109,25 @@ def mdto_xsd(pytestconfig, tmp_path_factory) -> Path:
         # store new location in pytest cache
         pytestconfig.cache.set("xsd/cache_path", str(cache_path))
 
-    return str(Path(cache_path) / xsd_filename)
+    return Path(cache_path) / xsd_filename
+
+
+@pytest.fixture
+def voorbeeld_pdf_file(pytestconfig, tmp_path_factory) -> Path:
+    """Make (cached) PDF file available as a fixture. Used to test automatic Bestand generation."""
+
+    # retrieve path to cached XSD
+    cache_path = pytestconfig.cache.get("pdf/cache_path", None)
+
+    # check if cached XSD exists
+    if cache_path is None or not (Path(cache_path) / pdf_filename).exists():
+        # download MDTO XSD examples to tmpdir
+        cache_path = tmp_path_factory.mktemp("PDF")
+        download_example_pdf(cache_path)
+        # store new location in pytest cache
+        pytestconfig.cache.set("pdf/cache_path", str(cache_path))
+
+    return Path(cache_path) / pdf_filename
 
 
 @pytest.fixture

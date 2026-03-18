@@ -1,45 +1,66 @@
 import dataclasses
-import json
-from dataclasses import dataclass
-from typing import Any, List, TextIO, Union, get_args, get_origin
+import hashlib
+import uuid
+import re
+from dataclasses import Field, dataclass
+from datetime import datetime
+from pathlib import Path
+from typing import Any, List, Self, TextIO, Type, TypeVar, Union, get_args, get_origin
 
 import lxml.etree as ET
 
-# allow running directly from interpreter
-try:
-    from . import helpers
-except ImportError:
-    import helpers
+from . import helpers
 
 # globals
 MDTO_MAX_NAAM_LENGTH = 80
 
+# needed to inform LSPs about @classmethod return types
+ObjectT = TypeVar("ObjectT", bound="Object")
+
 
 class ValidationError(TypeError):
-    """Custom formatter for MDTO validation errors"""
+    """Custom formatter for MDTO validation errors."""
 
-    def __init__(self, field_path: List[str], msg: str):
-        super().__init__(f"{'.'.join(field_path)}:\n\t{msg}")
+    def __init__(self, field_path: list[str], msg: str, src_file: str = None):
+        # print associated source file, if given
+        if src_file:
+            msg += f" (source file: {src_file})"
+
+        super().__init__(f"{'.'.join(field_path)}:\n  {msg}")
         self.field_path = field_path
         self.msg = msg
 
 
+class DateValidationError(ValidationError):
+    """Custom formatter for MDTO date(time) validation errors."""
+
+    def __init__(self, field_path: list[str], date: str, fmts: list[str]):
+        fmts.sort()
+        # Format bullet list
+        supported_fmts = "\n".join(f"  • {fmt}" for fmt in fmts)
+        msg = (
+            f"Date '{date}' is incorrectly formatted or non-existent; {'.'.join(field_path)} supports:\n\n"
+            f"{supported_fmts}\n\n"
+            "  Each format may include timezone info, e.g. '+01:00' or 'Z'"
+        )
+        super().__init__(field_path, msg)
+
+
 # TODO: update name and docstring to be more descriptive? Now, this class does more than just serialize
-# or maybe refactor?
+# Or maybe refactor completely?
 class Serializable:
-    """Provides is_valid() and to_xml() methods for converting MDTO dataclasses
+    """Provides validate() and to_xml() methods for converting MDTO dataclasses
     to valid MDTO XML."""
 
+    # TODO: not sure what this extending looks like in practice, and if its
+    # easy enough to keep the tip in the docstring?
     def validate(self) -> None:
-        """Validate the object's fields against the MDTO schema. Additional
-        validation logic can be incorporated by extending this method in a
-        subclass.
-
-        Note:
-           Typing information is infered based on type hints.
+        """Validate the object's fields against the rules of the MDTO
+        schema. Additional validation logic can be incorporated by
+        extending this method in a subclass.
 
         Raises:
-            ValidationError: field violates typing constraints of MDTO schema
+            ValidationError: field violates the MDTO schema
         """
         for field in dataclasses.fields(self):
             field_name = field.name
@@ -47,16 +68,16 @@ class Serializable:
             field_type = field.type
             optional_field = field.default is None
 
-            cls_name = self.__class__.__name__
-            _ValidationError = (
-                lambda m: ValidationError([cls_name, field_name], m)
-                if cls_name in ["Informatieobject", "Bestand"]
-                else ValidationError([field_name], m)
-            )
-
             # optional fields may be None
             if optional_field and field_value is None:
                 continue
+
+            cls_name = self.__class__.__name__
+            _ValidationError = (
+                lambda msg: ValidationError([cls_name, field_name], msg, self._srcfile)
+                if cls_name in ["Informatieobject", "Bestand"]
+                else ValidationError([field_name], msg)
+            )
 
             # check if field is listable based on type hint
             if get_origin(field_type) is Union:
@@ -103,7 +124,7 @@ class Serializable:
                 if field_value is None or len(str(field_value)) == 0:
                     raise _ValidationError("field value must not be empty or None")
 
-    def _mdto_ordered_fields(self) -> List:
+    def _mdto_ordered_fields(self) -> tuple[Field]:
         """Sort dataclass fields by their order in the MDTO XSD.
 
         This method should be overridden when the order of fields in
@@ -122,50 +143,97 @@ class Serializable:
             root (str): name of the new root tag
 
         Returns:
-            ET.Element: XML representation of object with new root tag
+            ET.Element: XML serialization of object with new root tag
         """
         root_elem = ET.Element(root)
         # get dataclass fields, but in the order required by the MDTO XSD
         fields = self._mdto_ordered_fields()
 
-        # process all fields in dataclass
         for field in fields:
             field_name = field.name
             field_value = getattr(self, field_name)
-            # serialize field name and value, and add result to root element
-            self._process_dataclass_field(root_elem, field_name, field_value)
 
-        # return the tree
+            # skip empty fields
+            if field_value is None:
+                continue
+
+            # listify
+            if not isinstance(field_value, (list, tuple, set)):
+                field_value = (field_value,)
+
+            # serialize sequence of primitives and *Gegevens objects
+            for val in field_value:
+                if isinstance(val, Serializable):
+                    root_elem.append(val.to_xml(field_name))
+                else:
+                    # micro-optim: create subelem and .text content in one go
+                    ET.SubElement(root_elem, field_name).text = str(val)
+
         return root_elem
 
-    def _process_dataclass_field(
-        self, root_elem: ET.Element, field_name: str, field_value: Any
-    ):
-        """Recursively process a dataclass field, and append its XML
-        representation to `root_elem`."""
+    def _is_empty(self) -> bool:
+        """Check if all values resolve to empty strings or None."""
+        values = [getattr(self, f.name) for f in dataclasses.fields(self)]
+        return all(v is None or not str(v) for v in values)
 
-        # skip empty fields
-        if field_value is None:
-            return
+    def clean_optional_empty_values(self) -> None:
+        """Recursively removes all empty optional fields from the tree.
 
-        # convert field_value to an iterable (if not already)
-        if not isinstance(field_value, (list, tuple, set)):
-            field_value = (field_value,)
+        This is not done automatically since empty values may reflect
+        logic flaws earlier in the pipeline. These possible flaws should
+        be scrutinized, rather than silently passed over.
 
-        # serialize sequence of primitives or *Gegevens objects
-        for val in field_value:
-            if isinstance(val, Serializable):
-                root_elem.append(val.to_xml(field_name))
+        Example:
+            ```python
+            >>> informatieobject.dekkingInRuimte = VerwijzingGegevens("", IdentificatieGegevens("", ""))
+            >>> informatieobject.clean_optional_empty_values()
+            >>> print(informatieobject.dekkingInRuimte)
+            None
+            ```
+
+        Note:
+            Edits objects in-place.
+        """
+
+        for field in dataclasses.fields(self):
+            field_name = field.name
+            field_value = getattr(self, field_name)
+            optional_field = field.default is None
+
+            if field_value is None:
+                continue
+
+            was_singleton = not isinstance(field_value, (list, tuple, set))
+            field_value = [field_value] if was_singleton else field_value
+
+            cleaned = []
+            for val in field_value:
+                if isinstance(val, Serializable):
+                    val.clean_optional_empty_values()
+                    # nuke whenever there are no remaining leaves
+                    if not val._is_empty():
+                        cleaned.append(val)
+                else:
+                    if val is not None and str(val):
+                        cleaned.append(val)
+
+            # ensure previously valid MDTO isn't rendered invalid by
+            # emptying a required field
+            if len(cleaned) == 0 and not optional_field:
+                cleaned = field_value[:1]
+
+            # TODO: maybe log removals?
+            if was_singleton:
+                setattr(self, field_name, cleaned[0] if cleaned else None)
             else:
-                new_sub_elem = ET.SubElement(root_elem, field_name)
-                new_sub_elem.text = str(val)
+                setattr(self, field_name, cleaned)
 
     @classmethod
     def _from_elem(cls, elem: ET.Element):
         """Private helper method stub.
 
-        Is used internally in from_xml to construct a gegevensgroep from a ET.Element.
-        This stub implementation is dynamically implemented at runtime.
+        Used within open() to construct a gegevensgroep from an ET.Element.
+        This stub is dynamically implemented at runtime.
         """
         pass
 
@@ -179,7 +247,7 @@ class Serializable:
 
 @dataclass
 class IdentificatieGegevens(Serializable):
-    """https://www.nationaalarchief.nl/archiveren/mdto/identificatieGegevens
+    """https://nationaalarchief.nl/archiveren/mdto/identificatieGegevens
 
     Args:
         identificatieKenmerk (str): Een kenmerk waarmee een object geïdentificeerd kan worden
@@ -189,31 +257,104 @@ class IdentificatieGegevens(Serializable):
     identificatieKenmerk: str
     identificatieBron: str
 
+    @classmethod
+    def uuid(cls) -> Self:
+        """Create a IdentificatieGegevens containing a UUID4.
+
+        Example:
+            ```python
+            >>> informatieobject.identificatie = IdentificatieGegevens.uuid()
+            >>> print(informatieobject.identificatie)
+            IdentificatieGegevens(identificatieKenmerk='4254ae31-7ac128f…',
+                                  identificatieBron='UUID4 via mdto.py')
+            ```
+
+        Returns:
+            IdentificatieGegevens: IdentificatieGegevens containing a UUID4
+        """
+        return cls(str(uuid.uuid4()), "UUID4 via mdto.py")
+
 
 @dataclass
 class VerwijzingGegevens(Serializable):
-    """https://www.nationaalarchief.nl/archiveren/mdto/verwijzingsGegevens
+    """https://nationaalarchief.nl/archiveren/mdto/verwijzingsGegevens
 
     Args:
         verwijzingNaam (str): Naam van het object waarnaar verwezen wordt
-        verwijzingIdentificatie (Optional[IdentificatieGegevens]): Identificatie van object waarnaar verwezen wordt
+        verwijzingIdentificatie (Optional[IdentificatieGegevens]): Identificatie van het object waarnaar verwezen wordt
     """
 
     verwijzingNaam: str
     verwijzingIdentificatie: IdentificatieGegevens = None
 
-    def validate(self):
-        """Warn about long names."""
+    def validate(self) -> None:
         super().validate()
         if len(self.verwijzingNaam) > MDTO_MAX_NAAM_LENGTH:
-            helpers.logging.warning(
+            helpers.logger.warning(
                 f"VerwijzingGegevens.verwijzingNaam: {self.verwijzingNaam} exceeds recommended length of {MDTO_MAX_NAAM_LENGTH}"
             )
+
+    @classmethod
+    def gemeente(cls, gemeentenaam_of_tooi_code: str) -> Self:
+        """Create a VerwijzingGegevens that references a municipality
+        by its official name and code from the TOOI register.
+
+        Accepts either a municipality name (e.g. 'Tiel', 'Gemeente Brielle') or
+        a code (e.g. 'gm0218', '0218').
+
+        Example:
+            ```python
+            >>> tiel = VerwijzingGegevens.gemeente('Tiel')
+            >>> tiel.verwijzingIdentificatie
+            IdentificatieGegevens('gm0218', 'TOOI register gemeenten compleet')
+            # create a reference to a munacipality from its TOOI code instead of name
+            >>> alphen = VerwijzingGegevens.gemeente('0484')
+            >>> alphen.verwijzingNaam
+            Gemeente Alphen aan den Rijn
+            ```
+
+        Args:
+            gemeentenaam_of_tooi_code: Municipality name (optionally prefixed with "Gemeente")
+                                       or four-digit code (optionally prefixed with "gm").
+
+        Returns:
+            VerwijzingGegevens: reference to a municipality by its
+             official name and code from the TOOI register.
+
+        Raises:
+            ValueError: Municipality name or code was not found in the TOOI register.
+        """
+        tooi_register = helpers.load_tooi_register_gemeenten()
+
+        if match := re.fullmatch(r"(gm)?(\d{4})", gemeentenaam_of_tooi_code.lower()):
+            # get name from code
+            tooi_code = match.group(2)
+            tooi_naam = tooi_register.get(tooi_code)
+        else:
+            # get code from name
+            tooi_code = tooi_register.get(
+                gemeentenaam_of_tooi_code.lower().removeprefix("gemeente ")
+            )
+            # get pretty name while we're at it
+            tooi_naam = tooi_register[tooi_code] if tooi_code else None
+
+        if tooi_naam and tooi_code:
+            return cls(
+                f"Gemeente {tooi_naam}",
+                IdentificatieGegevens(
+                    f"gm{tooi_code}", "TOOI register gemeenten compleet"
+                ),
+            )
+
+        raise ValueError(
+            f"Name or code '{gemeentenaam_of_tooi_code}' not found in 'TOOI register gemeenten compleet'. "
+            "For a list of possible values, see https://identifier.overheid.nl/tooi/set/rwc_gemeenten_compleet"
+        )
 
 
 @dataclass
 class BegripGegevens(Serializable):
-    """https://www.nationaalarchief.nl/archiveren/mdto/begripGegevens
+    """https://nationaalarchief.nl/archiveren/mdto/begripGegevens
 
     Args:
         begripLabel (str): De tekstweergave van het begrip
@@ -225,22 +366,22 @@ class BegripGegevens(Serializable):
     begripBegrippenlijst: VerwijzingGegevens
     begripCode: str = None
 
-    def _mdto_ordered_fields(self) -> List:
+    def _mdto_ordered_fields(self) -> tuple[Field]:
         """Sort dataclass fields by their order in the MDTO XSD."""
         fields = super()._mdto_ordered_fields()
         # swap order of begripBegrippenlijst and begripCode
-        return fields[:-2] + (fields[2], fields[1])
+        return (fields[0], fields[2], fields[1])
 
 
 @dataclass
 class TermijnGegevens(Serializable):
-    """https://www.nationaalarchief.nl/archiveren/mdto/termijnGegevens
+    """https://nationaalarchief.nl/archiveren/mdto/termijnGegevens
 
     Args:
         termijnTriggerStartLooptijd (Optional[BegripGegevens]): Gebeurtenis waarna de looptijd van de termijn start
-        termijnStartdatumLooptijd (Optional[str]): Datum waarop de looptijd is gestart
-        termijnLooptijd (Optional[str]): Hoeveelheid tijd waarin de termijnEindDatum bereikt wordt
-        termijnEinddatum (Optional[str]): Datum waarop de termijn eindigt
+        termijnStartdatumLooptijd (Optional[str]): Datum waarop de looptijd is gestart, in `YYYY-MM-DD` formaat
+        termijnLooptijd (Optional[str]): Hoeveelheid tijd waarin de termijnEindDatum bereikt wordt, bijv. `P20Y`
+        termijnEinddatum (Optional[str]): Datum waarop de termijn eindigt, bijv. `2029-10-10`
     """
 
     termijnTriggerStartLooptijd: BegripGegevens = None
@@ -248,25 +389,121 @@ class TermijnGegevens(Serializable):
     termijnLooptijd: str = None
     termijnEinddatum: str = None
 
+    def validate(self) -> None:
+        # FIXME: get a way to retrieve a more complete path?
+        super().validate()
+
+        if self.termijnStartdatumLooptijd and not helpers.valid_mdto_date_precise(
+            self.termijnStartdatumLooptijd
+        ):
+            raise DateValidationError(
+                ["termijnStartdatumLooptijd"],
+                self.termijnStartdatumLooptijd,
+                ["%Y-%m-%d"],
+            )
+
+        if self.termijnEinddatum and not helpers.valid_mdto_date(self.termijnEinddatum):
+            raise DateValidationError(
+                ["termijnEinddatum"],
+                self.termijnEinddatum,
+                [f for f, _ in helpers.date_fmts],
+            )
+
+        if self.termijnLooptijd and not helpers.valid_duration(self.termijnLooptijd):
+            raise ValidationError(
+                ["termijnLooptijd"],
+                f"'{self.termijnLooptijd}' is not a valid duration. See "
+                "https://www.w3.org/TR/xmlschema-2/#duration for more information.",
+            )
+
 
 @dataclass
 class ChecksumGegevens(Serializable):
-    """https://www.nationaalarchief.nl/archiveren/mdto/checksum
+    """https://nationaalarchief.nl/archiveren/mdto/checksum
 
     Note:
         When building Bestand objects, it's recommended to call the convience
-        function `bestand_from_file()` instead.  And if you just need to update
-        a Bestand object's checksum, you should use `create_checksum()`.
+        function `Bestand.from_file()` instead. To simply compute a new checksum of a given file,
+        see `ChecksumGegevens.from_file(...)`.
+
+    Example:
+
+        ```python
+        bestand = Bestand.generate(...)
+        # assign a new checksum
+        bestand.checksum = Checksum.from_file("foo.txt")
+        ```
+
+    Args:
+        checksumAlgoritme (BegripGegevens): Naam van het algoritme dat is gebruikt om de checksum te maken
+        checksumWaarde (str): Waarde van de checksum
+        checksumDatum (str): Datum waarop de checksum gemaakt is
     """
 
     checksumAlgoritme: BegripGegevens
     checksumWaarde: str
     checksumDatum: str
 
+    def validate(self) -> None:
+        super().validate()
+
+        if not helpers.valid_mdto_datetime_precise(self.checksumDatum):
+            raise DateValidationError(
+                # FIXME: having ["Bestand", "checksum", "checksumDatum"] here leads to weird error
+                # messages in Object.validate() (i.e. .validate() calls in parent classes).
+                # The shortened version is also kind of weird tho, because you have no parent information. (you now only get that if you call .validate on a Bestand)
+                ["checksumDatum"],
+                self.checksumDatum,
+                ["%Y-%m-%dT%H:%M:%S"],
+            )
+
+    @classmethod
+    def from_file(
+        cls, file_or_filename: str | TextIO, algorithm: str = "sha256"
+    ) -> Self:
+        """Convience function for creating ChecksumGegegevens objects.
+
+        Takes a file-like object or path to file, and then computes the requisite
+        checksum metadata (i.e.  `checksumAlgoritme`, `checksumWaarde`, and
+        `checksumDatum`) from that file.
+
+        Example:
+
+            ```python
+            pdf_checksum = ChecksumGegevens.from_file('document.pdf')
+            # create ChecksumGegevens with a 512 bits instead of a 256 bits checksum
+            jpg_checksum = ChecksumGegevens.from_file('scan-003.jpg', algorithm="sha512")
+            ```
+
+        Args:
+            file_or_filename (str | TextIO): file-like object to generate checksum data for
+            algorithm (Optional[str]): checksum algorithm to use; defaults to sha256.
+             For valid values, see https://docs.python.org/3/library/hashlib.html
+
+        Returns:
+            ChecksumGegevens: checksum metadata for `file_or_filename`
+        """
+        infile = helpers.process_file(file_or_filename)
+
+        verwijzingBegrippenlijst = VerwijzingGegevens(
+            verwijzingNaam="Begrippenlijst ChecksumAlgoritme MDTO"
+        )
+
+        checksumAlgoritme = BegripGegevens(
+            begripLabel=algorithm.upper(), begripBegrippenlijst=verwijzingBegrippenlijst
+        )
+
+        # file_digest() expects a file in binary mode, hence `infile.buffer.raw`
+        checksumWaarde = hashlib.file_digest(infile.buffer.raw, algorithm).hexdigest()
+
+        checksumDatum = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+
+        return cls(checksumAlgoritme, checksumWaarde, checksumDatum)
+
 
 @dataclass
 class BeperkingGebruikGegevens(Serializable):
-    """https://www.nationaalarchief.nl/archiveren/mdto/beperkingGebruik
+    """https://nationaalarchief.nl/archiveren/mdto/beperkingGebruik
 
     Args:
         beperkingGebruikType (BegripGegevens): Typering van de beperking
@@ -284,7 +521,7 @@ class BeperkingGebruikGegevens(Serializable):
 
 @dataclass
 class DekkingInTijdGegevens(Serializable):
-    """https://www.nationaalarchief.nl/archiveren/mdto/dekkingInTijd
+    """https://nationaalarchief.nl/archiveren/mdto/dekkingInTijd
 
     Args:
         dekkingInTijdType (BegripGegevens): Typering van de periode waar het informatieobject betrekking op heeft
@@ -296,14 +533,33 @@ class DekkingInTijdGegevens(Serializable):
     dekkingInTijdBegindatum: str
     dekkingInTijdEinddatum: str = None
 
+    def validate(self) -> None:
+        super().validate()
+
+        if not helpers.valid_mdto_date(self.dekkingInTijdBegindatum):
+            raise DateValidationError(
+                ["Informatieobject", "dekkingInTijd", "dekkingInTijdBegindatum"],
+                self.dekkingInTijdBegindatum,
+                [f for f, _ in helpers.date_fmts],
+            )
+
+        if self.dekkingInTijdEinddatum and not helpers.valid_mdto_date(
+            self.dekkingInTijdEinddatum
+        ):
+            raise DateValidationError(
+                ["Informatieobject", "dekkingInTijd", "dekkingInTijdEinddatum"],
+                self.dekkingInTijdEinddatum,
+                [f for f, _ in helpers.date_fmts],
+            )
+
 
 @dataclass
 class EventGegevens(Serializable):
-    """https://www.nationaalarchief.nl/archiveren/mdto/event
+    """https://nationaalarchief.nl/archiveren/mdto/event
 
     Args:
-        eventType (BegripGegevens): Aanduiding van het type event
-        eventTijd (Optional[str]): Tijdstip waarop het event heeft plaatsgevonden
+        eventType (BegripGegevens): Het type event
+        eventTijd (Optional[str]): Datum + tijdstip waarop event plaatsvond, bijv. 2001-10-12T12:05:11
         eventVerantwoordelijkeActor (Optional[VerwijzingGegevens]): Actor die verantwoordelijk was voor het event
         eventResultaat (Optional[str]): Beschrijving van het resultaat van het event
     """
@@ -313,10 +569,20 @@ class EventGegevens(Serializable):
     eventVerantwoordelijkeActor: VerwijzingGegevens = None
     eventResultaat: str = None
 
+    def validate(self) -> None:
+        super().validate()
+        if self.eventTijd and not helpers.valid_mdto_datetime(self.eventTijd):
+            # FIXME: I guess that the proper path may not always include a informatieobject
+            raise DateValidationError(
+                ["Informatieobject", "event", "eventTijd"],
+                self.eventTijd,
+                [f for f, _ in helpers.datetime_fmts],
+            )
+
 
 @dataclass
 class RaadpleeglocatieGegevens(Serializable):
-    """https://www.nationaalarchief.nl/archiveren/mdto/raadpleeglocatie
+    """https://nationaalarchief.nl/archiveren/mdto/raadpleeglocatie
 
     Args:
         raadpleeglocatieFysiek (Optional[VerwijzingGegevens])): Fysieke raadpleeglocatie van het informatieobject
@@ -327,24 +593,32 @@ class RaadpleeglocatieGegevens(Serializable):
     raadpleeglocatieOnline: str | List[str] = None
 
     def validate(self) -> None:
-        """Check if raadpleeglocatieOnline is a RFC 3986 compliant URI."""
         super().validate()
-        if not helpers.validate_url_or_urls(self.raadpleeglocatieOnline):
-            raise ValidationError(
-                # FIXME: maybe this path should be generated on the fly?
-                [
-                    "informatieobject",
-                    "raadpleeglocatie",
-                    "RaadpleeglocatieGegevens",
-                    "raadpleeglocatieOnline",
-                ],
-                f"url {self.raadpleeglocatieOnline} is malformed",
-            )
+
+        # listify
+        urls = (
+            [self.raadpleeglocatieOnline]
+            if isinstance(self.raadpleeglocatieOnline, str)
+            else self.raadpleeglocatieOnline
+            or []  # handle raadpleeglocatieOnline is None
+        )
+
+        for u in urls:
+            if not helpers.valid_url(u):
+                raise ValidationError(
+                    # FIXME: maybe this path should be generated on the fly?
+                    [
+                        "informatieobject",
+                        "raadpleeglocatie",
+                        "raadpleeglocatieOnline",
+                    ],
+                    f"url {u} is malformed",
+                )
 
 
 @dataclass
 class GerelateerdInformatieobjectGegevens(Serializable):
-    """https://www.nationaalarchief.nl/archiveren/mdto/gerelateerdInformatieobjectGegevens
+    """https://nationaalarchief.nl/archiveren/mdto/gerelateerdInformatieobjectGegevens
 
     Args:
         gerelateerdInformatieobjectVerwijzing (VerwijzingGegevens): Verwijzing naar het gerelateerde informatieobject
@@ -357,7 +631,7 @@ class GerelateerdInformatieobjectGegevens(Serializable):
 
 @dataclass
 class BetrokkeneGegevens(Serializable):
-    """https://www.nationaalarchief.nl/archiveren/mdto/betrokkeneGegevens
+    """https://nationaalarchief.nl/archiveren/mdto/betrokkeneGegevens
 
     Args:
         betrokkeneTypeRelatie (BegripGegevens): Typering van de betrokkenheid van de actor bij het informatieobject
@@ -371,12 +645,12 @@ class BetrokkeneGegevens(Serializable):
 # TODO: document constructing from the Object class directly?
 @dataclass
 class Object(Serializable):
-    """https://www.nationaalarchief.nl/archiveren/mdto/object
+    """https://nationaalarchief.nl/archiveren/mdto/object
 
     This class serves as the parent class to Informatieobject and
     Bestand. There is no reason to use it directly.
 
-    MDTO objects that derive from this class inherit a from_xml() and
+    MDTO objects that derive from this class inherit a open() and
     save() method, which can be used to read/write these objects
     to/from XML files.
     """
@@ -386,9 +660,10 @@ class Object(Serializable):
 
     def __post_init__(self):
         # adds possibility to associate MDTO objects with files
-        self._file: str | None = None
+        self._srcfile: str | None = None
+        """adds possibility to associate MDTO objects with files"""
 
-    def to_xml(self, root: str) -> ET.ElementTree:
+    def to_xml(self, root: str) -> ET.Element:
         """Transform Object into an XML tree with the following structure:
 
         ```xml
@@ -399,7 +674,7 @@ class Object(Serializable):
         </MDTO>
         ```
         Returns:
-            ET.ElementTree: XML tree representing the Object
+            ET.Element: XML seralization of the MDTO-object
         """
 
         # construct attributes of <MDTO>
@@ -421,63 +696,84 @@ class Object(Serializable):
         # convert all dataclass fields to their XML representation
         children = super().to_xml(root)
         mdto.append(children)
+        return mdto
 
-        tree = ET.ElementTree(mdto)
-        # use tabs as indentation (this matches what MDTO does)
-        ET.indent(tree, space="\t")
-        return tree
 
-    def validate(self):
-        """Warn about long names."""
+    def validate(self) -> None:
         super().validate()
         if len(self.naam) > MDTO_MAX_NAAM_LENGTH:
-            helpers.logging.warning(
-                f"{self.__class__.__name__}.naam: {self.naam} exceeds recommended length of {MDTO_MAX_NAAM_LENGTH}"
+            helpers.logger.warning(
+                f"{self.__class__.__name__}.naam: '{self.naam}' exceeds recommended length of {MDTO_MAX_NAAM_LENGTH}"
             )
 
     def save(
         self,
         file_or_filename: str | TextIO,
-        lxml_args: dict = {
-            "xml_declaration": True,
-            "pretty_print": True,
-            "encoding": "UTF-8",
-        },
+        minify: bool = False,
+        lxml_kwargs: dict = {},
     ) -> None:
-        """Save object to an XML file, provided it satifies the MDTO schema.
+        """Save object to a XML file, provided it satifies the MDTO schema.
+
+        The XML is pretty printed by default; use `minify=True` to reverse this.
 
         Args:
-            file_or_filename (str | TextIO): Path or file-like object to write object's XML representation to
-            lxml_args (Optional[dict]): Extra keyword arguments to pass to lxml's write() method.
-              Defaults to `{xml_declaration=True, pretty_print=True, encoding="UTF-8"}`.
+            file_or_filename (str | TextIO): Path or file-like object to write
+             object's XML representation to
+            minify (Optional[bool]): the reverse of pretty printing; makes the XML
+             as small as possible by removing the XML declaration and any optional
+             whitespace
+            lxml_kwargs (Optional[dict]): optional dict of keyword arguments that
+             can be used to override the args passed to lxml's `write()`.
 
         Note:
-            For a complete list of options for lxml's write method, see
+            For a complete list of arguments of lxml's write method, see
             https://lxml.de/apidoc/lxml.etree.html#lxml.etree._ElementTree.write
 
         Raises:
-            ValidationError: Raised when the object voilates the MDTO schema
+            ValidationError: Object voilates the MDTO schema
         """
         # lxml wants files in binary mode, so pass along a file's raw byte stream
         if hasattr(file_or_filename, "write"):
-            file_or_filename = file_or_filename.buffer.raw
+            outfile = file_or_filename.buffer.raw
+        else:
+            outfile = file_or_filename
 
         # validate before serialization to ensure correctness
         # (doing this in to_xml would be slow, and perhaps unexpected)
         self.validate()
-
         xml = self.to_xml()
-        xml.write(file_or_filename, **lxml_args)
+        # lxml's .write wants an ElementTree object
+        tree = ET.ElementTree(xml)
+
+        if not minify:
+            # match MDTO voorbeeld bestanden in terms of whitespace
+            ET.indent(xml, space="\t")
+
+        lxml_defaults = {
+            "xml_declaration": not minify,
+            "pretty_print": not minify,
+            "encoding": "UTF-8",
+        }
+
+        # `|` is a union operator; it merges two dicts, with right-hand side taking precedence
+        tree.write(outfile, **(lxml_defaults | lxml_kwargs))
+
+        # associate MDTO object with file
+        self._srcfile = (
+            file_or_filename.name
+            if hasattr(file_or_filename, "write")
+            else str(file_or_filename)
+        )
 
     @classmethod
-    def from_xml(cls, mdto_xml: TextIO | str):
+    def open(cls: Type[ObjectT], mdto_xml: str | TextIO) -> ObjectT:
         """Construct a Informatieobject/Bestand object from a MDTO XML file.
 
         Example:
 
         ```python
         # read informatieobject from file
-        archiefstuk = Informatieobject.from_xml("Voorbeeld Archiefstuk Informatieobject.xml")
+        archiefstuk = Informatieobject.open("Voorbeeld Archiefstuk Informatieobject.xml")
 
         # edit the informatieobject
         archiefstuk.naam = "Verlenen kapvergunning Flipje's Erf 15 Tiel"
@@ -487,7 +783,7 @@ class Object(Serializable):
         ```
 
         Note:
-            The parser tolerates some schema violations. Specfically, it will
+            The parser tolerates some schema violations. Specifically, it will
             _not_ error if elements are out of order, or if a required
             element is missing. It _will_ error if tags are not potential
             children of a given element.
@@ -501,8 +797,8 @@ class Object(Serializable):
              violations are tolerated; see above)
 
         Args:
-            mdto_xml (TextIO | str): The MDTO XML file to construct a Bestand/Informatieobject from.
-             The path to this file is stored in instances' `._file` attribute for future reference.
+            mdto_xml (str | TextIO): The MDTO XML file to construct a Bestand/Informatieobject from.
+             The path to this file is stored in the `._srcfile` attribute for future reference.
 
         Returns:
             Bestand | Informatieobject: A new MDTO object
@@ -511,9 +807,6 @@ class Object(Serializable):
         tree = ET.parse(mdto_xml)
         root = tree.getroot()
         children = list(root[0])
-
-        # store XML file path for later reference
-        path = mdto_xml.name if hasattr(mdto_xml, "write") else str(mdto_xml)
 
         # check if object type matches informatieobject/bestand
         object_type = root[0].tag.removeprefix("{https://www.nationaalarchief.nl/mdto}")
@@ -538,14 +831,25 @@ class Object(Serializable):
         else:
             obj = cls._from_elem(children)
 
-        obj._file = path
+        # store original file path for later reference
+        # TODO: normalize this so that it will always store an absolute path?
+        obj._srcfile = mdto_xml.name if hasattr(mdto_xml, "write") else str(mdto_xml)
         return obj
 
+    def verwijzing(self) -> VerwijzingGegevens:
+        """
+        Create a VerwijzingGegevens object that references this Informatieobject/Bestand.
+        Useful to populate `heeftRepresentatie`, `isOnderdeelVan`, and `bevatOnderdeel`.
 
-# TODO: place more restrictions on taal?
+        Returns:
+            VerwijzingGegevens: reference with the Informatieobject/Bestand's name and ID
+        """
+        return VerwijzingGegevens(self.naam, self.identificatie)
+
+
 @dataclass
 class Informatieobject(Object, Serializable):
-    """https://www.nationaalarchief.nl/archiveren/mdto/informatieobject
+    """https://nationaalarchief.nl/archiveren/mdto/informatieobject
 
     Example:
 
@@ -608,42 +912,38 @@ class Informatieobject(Object, Serializable):
     betrokkene: BetrokkeneGegevens | List[BetrokkeneGegevens] = None
     activiteit: VerwijzingGegevens | List[VerwijzingGegevens] = None
 
-    def _mdto_ordered_fields(self) -> List:
+    def _mdto_ordered_fields(self) -> tuple[Field]:
         """Sort dataclass fields by their order in the MDTO XSD."""
-        sorting_mapping = {
-            "identificatie": 0,
-            "naam": 1,
-            "aggregatieniveau": 2,
-            "classificatie": 3,
-            "trefwoord": 4,
-            "omschrijving": 5,
-            "raadpleeglocatie": 6,
-            "dekkingInTijd": 7,
-            "dekkingInRuimte": 8,
-            "taal": 9,
-            "event": 10,
-            "waardering": 11,
-            "bewaartermijn": 12,
-            "informatiecategorie": 13,
-            "isOnderdeelVan": 14,
-            "bevatOnderdeel": 15,
-            "heeftRepresentatie": 16,
-            "aanvullendeMetagegevens": 17,
-            "gerelateerdInformatieobject": 18,
-            "archiefvormer": 19,
-            "betrokkene": 20,
-            "activiteit": 21,
-            "beperkingGebruik": 22,
-        }
+        f = super()._mdto_ordered_fields()
+        # fmt: off
+        return (
+            f[0],   # identificatie
+            f[1],   # naam
+            f[5],   # aggregatieniveau
+            f[6],   # classificatie
+            f[7],   # trefwoord
+            f[8],   # omschrijving
+            f[9],   # raadpleeglocatie
+            f[10],  # dekkingInTijd
+            f[11],  # dekkingInRuimte
+            f[12],  # taal
+            f[13],  # event
+            f[4],   # waardering
+            f[14],  # bewaartermijn
+            f[15],  # informatiecategorie
+            f[16],  # isOnderdeelVan
+            f[17],  # bevatOnderdeel
+            f[18],  # heeftRepresentatie
+            f[19],  # aanvullendeMetagegevens
+            f[20],  # gerelateerdInformatieobject
+            f[2],   # archiefvormer
+            f[21],  # betrokkene
+            f[22],  # activiteit
+            f[3],   # beperkingGebruik
+        )
+        # fmt: on
 
-        return [
-            field
-            for field in sorted(
-                dataclasses.fields(self), key=lambda f: sorting_mapping[f.name]
-            )
-        ]
-
-    def to_xml(self) -> ET.ElementTree:
+    def to_xml(self) -> ET.Element:
         """Transform Informatieobject into an XML tree with the following structure:
 
         ```xml
@@ -662,14 +962,23 @@ class Informatieobject(Object, Serializable):
         """
         return super().to_xml("informatieobject")
 
+    def validate(self) -> None:
+        super().validate()
+        if self.taal and not helpers.valid_langcode(self.taal):
+            raise ValidationError(
+                ["Informatieobject", "taal"],
+                f"'{self.taal}' is not a valid RFC3066 language code. "
+                "See https://en.wikipedia.org/wiki/IETF_language_tag for more information.",
+            )
+
 
 @dataclass
 class Bestand(Object, Serializable):
-    """https://www.nationaalarchief.nl/archiveren/mdto/bestand
+    """https://nationaalarchief.nl/archiveren/mdto/bestand
 
     Note:
-        When creating Bestand objects, it's easier to use the
-        `bestand_from_file()` convenience function instead.
+        When creating Bestand objects, it's *almost always* easier to use the
+        `Bestand.from_file()` class method instead.
 
     Args:
         identificatie (IdentificatieGegevens | List[IdentificatieGegevens]): Identificatiekenmerk
@@ -687,7 +996,7 @@ class Bestand(Object, Serializable):
     isRepresentatieVan: VerwijzingGegevens
     URLBestand: str = None
 
-    def _mdto_ordered_fields(self) -> List:
+    def _mdto_ordered_fields(self) -> tuple[Field]:
         """Sort dataclass fields by their order in the MDTO XSD."""
         fields = super()._mdto_ordered_fields()
         # swap order of isRepresentatieVan and URLbestand
@@ -714,13 +1023,95 @@ class Bestand(Object, Serializable):
         return super().to_xml("bestand")
 
     def validate(self) -> None:
-        """Check if URLBestand is a RFC 3986 compliant URI"""
         super().validate()
-        if not helpers.validate_url_or_urls(self.URLBestand):
+        if self.URLBestand and not helpers.valid_url(self.URLBestand):
             raise ValidationError(
-                ["bestand", "URLBestand"],
+                ["Bestand", "URLBestand"],
                 f"url {self.URLBestand} is malformed",
             )
+
+    @classmethod
+    def from_file(
+        cls,
+        file_or_filename: str | TextIO,
+        isRepresentatieVan: VerwijzingGegevens | str | TextIO,
+        use_mimetype: bool = False,
+    ) -> Self:
+        """Convenience function for creating a Bestand object from a file, such
+        as a PDF.
+
+        This function differs from calling Bestand() directly in that it
+        infers most information for you (checksum, PRONOM info, etc.) by
+        inspecting `file`. `<identificatie>` is set to a UUID.
+
+        Args:
+            file_or_filename (str | TextIO): the file the Bestand object represents
+            isRepresentatieVan (TextIO | str | VerwijzingGegevens): a XML
+              file containing an informatieobject, or a
+              VerwijzingGegevens referencing an informatieobject.
+              Used to construct <isRepresentatieVan>.
+            use_mimetype (Optional[bool]): populate `<bestandsformaat>`
+              with mimetype instead of PRONOM info. Defaults to False.
+
+        Example:
+         ```python
+
+         verwijzing_obj = VerwijzingGegevens("Ontwerpstudie Dwarsdoorsneden kust")
+         bestand = Bestand.from_file(
+              "vergunning.pdf",
+              isRepresentatieVan=verwijzing_obj  # or pass the actual file
+         )
+
+         # change identificatiekenmerk, if desired (defaults to a UUID)
+         bestand.identificatie = ...
+
+         bestand.save("vergunning.pdf.bestand.mdto.xml")
+         ```
+
+        Raises:
+            RuntimeError: PRONOM or mimetype detection failed.
+
+        Returns:
+            Bestand: new Bestand object
+        """
+        # file-like object?
+        if hasattr(file_or_filename, "read"):
+            path = Path(file_or_filename.name)
+        else:
+            path = Path(file_or_filename)
+
+        if use_mimetype:
+            bestandsformaat = helpers.mimetypeinfo(path)
+        else:
+            bestandsformaat = helpers.pronominfo(path)
+
+        naam = path.name  # set <naam> to basename
+        omvang = path.stat().st_size
+        checksum = ChecksumGegevens.from_file(path)
+
+        # file or file path?
+        if isinstance(isRepresentatieVan, (str, Path)) or hasattr(
+            isRepresentatieVan, "read"
+        ):
+            informatieobject_file = helpers.process_file(isRepresentatieVan)
+            # Construct verwijzing from informatieobject file
+            verwijzing_obj = helpers.detect_verwijzing(informatieobject_file)
+            informatieobject_file.close()
+        elif isinstance(isRepresentatieVan, VerwijzingGegevens):
+            verwijzing_obj = isRepresentatieVan
+        else:
+            raise TypeError(
+                "isRepresentatieVan must either be a path, file, or a VerwijzingGegevens object."
+            )
+
+        return cls(
+            IdentificatieGegevens.uuid(),
+            naam,
+            omvang,
+            bestandsformaat,
+            checksum,
+            verwijzing_obj,
+        )
 
 
 def _construct_deserialization_classmethods():
@@ -729,7 +1120,7 @@ def _construct_deserialization_classmethods():
     of `Serializable`.
 
     This constructor executes on module import, and creates helpers
-    for the public `from_xml()` classmethods of Informatieobject and
+    for the public `open()` classmethods of Informatieobject and
     Bestand.
     """
 
@@ -757,12 +1148,14 @@ def _construct_deserialization_classmethods():
             elem[1].text,
         )
 
-    def from_elem_factory(cls, mdto_xml_parsers: dict) -> classmethod:
+    def from_elem_factory(mdto_xml_parsers: dict) -> classmethod:
         """Create initialized from_elem functions."""
 
-        def from_elem(inner_cls, elem: ET.Element):
-            constructor_args = {field: [] for field in mdto_xml_parsers}
+        def from_elem(cls, elem: ET.Element):
+            """Convert XML elements (`elem`) to MDTO classes (`cls`)"""
 
+            # it may seem like pre computing this is faster, but it is not
+            constructor_args = {field: [] for field in mdto_xml_parsers}
             for child in elem:
                 mdto_field = child.tag.removeprefix(
                     "{https://www.nationaalarchief.nl/mdto}"
@@ -779,7 +1172,7 @@ def _construct_deserialization_classmethods():
                 elif len(value) == 1:
                     constructor_args[argname] = value[0]
 
-            return inner_cls(**constructor_args)
+            return cls(**constructor_args)
 
         return classmethod(from_elem)
 
@@ -789,7 +1182,6 @@ def _construct_deserialization_classmethods():
         for field in dataclasses.fields(cls):
             field_name = field.name
             field_type = resolve_type(field.type)
-
             if field_type is str:
                 parsers[field_name] = parse_text
             elif field_type is IdentificatieGegevens:
@@ -802,7 +1194,7 @@ def _construct_deserialization_classmethods():
             else:
                 parsers[field_name] = parse_text
 
-        cls._from_elem = from_elem_factory(cls, parsers)
+        cls._from_elem = from_elem_factory(parsers)
 
 
 # construct all _from_elem() classmethods immediately on import

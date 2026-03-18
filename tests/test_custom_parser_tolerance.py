@@ -13,7 +13,7 @@ def test_out_of_order_tolerance(voorbeeld_archiefstuk_xml):
     children[0], children[1] = children[1], children[0]
 
     archiefstuk = Informatieobject._from_elem(children)
-    assert archiefstuk.naam == "Verlenen kapvergunning Hooigracht 21 Den Haag"
+    assert archiefstuk.naam == "Atelier Kustkwaliteit, 2011. Ontwerpstudie Dwarsdoorsneden kust, vier Kustdoorsneden in beeld, Werkboek 2, Delft."
 
 def test_missing_but_required_tolerance(voorbeeld_archiefstuk_xml):
     """Test parser tolerance for missing but required elements"""

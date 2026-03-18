@@ -3,7 +3,6 @@ from pathlib import Path
 import lxml.etree as ET
 import pytest
 
-import mdto
 from mdto.gegevensgroepen import *
 
 
@@ -32,11 +31,9 @@ def test_automatic_bestand_xml_validity(mdto_xsd, voorbeeld_archiefstuk_xml):
     # use this .py file for automatic metadata generation
     example_file = Path(__file__)
     # create Bestand object from example_file + existing informatieobject
-    bestand = mdto.bestand_from_file(
+    bestand = Bestand.from_file(
         example_file,
-        IdentificatieGegevens("abcd-1234", "Corsa"),
         voorbeeld_archiefstuk_xml,
-        url="https://example.com/",
     )
 
     # see comment about lxml above

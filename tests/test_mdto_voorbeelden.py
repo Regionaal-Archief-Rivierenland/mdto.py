@@ -15,14 +15,17 @@ def serialization_chain(xmlfile: str) -> str:
         str: the re-serailized XML, as a string
     """
     # Deserialize
-    object = mdto.Object.from_xml(xmlfile)
+    informatieobject_of_bestand = mdto.open(xmlfile)
 
     # Serialize back to XML
-    output_tree = object.to_xml()
+    xml = informatieobject_of_bestand.to_xml()
+    tree = ET.ElementTree(xml)
+    # indent the tree with a tab to match what mdto does
+    ET.indent(tree, space="\t")
 
     return (
         ET.tostring(
-            output_tree.getroot(),
+            tree,
             doctype='<?xml version="1.0" encoding="UTF-8"?>',
             encoding="UTF-8",
         ).decode("UTF-8")
@@ -32,45 +35,74 @@ def serialization_chain(xmlfile: str) -> str:
 
 def test_from_xml_archiefstuk(voorbeeld_archiefstuk_xml):
     """Test that from_xml() correctly parses Voorbeeld Archiefstuk Informatieobject.xml"""
-    archiefstuk = Informatieobject.from_xml(voorbeeld_archiefstuk_xml)
+    archiefstuk = Informatieobject.open(voorbeeld_archiefstuk_xml)
 
     assert isinstance(archiefstuk, Informatieobject)
-    assert archiefstuk.naam == "Verlenen kapvergunning Hooigracht 21 Den Haag"
+    assert (
+        archiefstuk.naam
+        == "Atelier Kustkwaliteit, 2011. Ontwerpstudie Dwarsdoorsneden kust, vier Kustdoorsneden in beeld, Werkboek 2, Delft."
+    )
 
 
 def test_from_xml_dossier(voorbeeld_dossier_xml):
     """Test that from_xml() correctly parses Voorbeeld Dossier Informatieobject.xml"""
-    dossier = Informatieobject.from_xml(voorbeeld_dossier_xml)
+    dossier = Informatieobject.open(voorbeeld_dossier_xml)
 
     assert isinstance(dossier, Informatieobject)
-    assert dossier.trefwoord[1] == "kappen"
+    assert dossier.trefwoord == "Noordzee"
 
 
 def test_from_xml_serie(voorbeeld_serie_xml):
     """Test that from_xml() correctly parses Voorbeeld Serie Informatieobject.xml"""
-    serie = Informatieobject.from_xml(voorbeeld_serie_xml)
+    serie = Informatieobject.open(voorbeeld_serie_xml)
 
     assert isinstance(serie, Informatieobject)
-    assert serie.naam == "Vergunningen van de gemeente 's-Gravenhage vanaf 1980"
+    assert (
+        serie.naam
+        == "Deelprogramma Kust. Voorbereiding 2010-2014 adviezen en voorstellen voorkeursstrategie Kust en strategische beslissing Zand"
+    )
 
 
 def test_from_xml_bestand(voorbeeld_bestand_xml):
     """Test that from_xml() correctly parses Voorbeeld Bestand.xml"""
-    bestand = Bestand.from_xml(voorbeeld_bestand_xml)
+    bestand = Bestand.open(voorbeeld_bestand_xml)
 
     assert isinstance(bestand, Bestand)
     assert (
         bestand.isRepresentatieVan.verwijzingNaam
-        == "Verlenen kapvergunning Hooigracht 21 Den Haag"
+        == "Atelier Kustkwaliteit, 2011. Ontwerpstudie Dwarsdoorsneden kust, vier Kustdoorsneden in beeld, Werkboek 2, Delft."
     )
 
 
-def test_automatic_bestand_generation(voorbeeld_bestand_xml):
-    """Test if automatic Bestand XML generation matches Voorbeeld Bestand.xml"""
-    # TODO: this needs to read the resource at
-    # <URLBestand>https://kia.pleio.nl/file/download/55815288/0090101KapvergunningHoogracht.pdf</URLBestand>
-    # but that link is dead (as all other links)
-    pass
+def test_automatic_bestand_generation(
+    voorbeeld_bestand_xml, voorbeeld_archiefstuk_xml, voorbeeld_pdf_file
+):
+    """
+    Test if generating a Bestand object from the file given in
+    URLBestand matches the Bestand object created by the NA.
+
+    Here, `voorbeeld_pdf_file` fullfills the role of the file in URLBestand.
+    """
+
+    # informatieobject that corresponds to Bestand
+    informatieobject = Informatieobject.open(voorbeeld_archiefstuk_xml)
+    bestand = Bestand.from_file(
+        voorbeeld_pdf_file,
+        informatieobject.verwijzing(),
+    )
+
+    # Bestand object to compare to
+    bestand_original = Bestand.open(voorbeeld_bestand_xml)
+
+    # change date to date in original (there is no way to guess this)
+    bestand.checksum.checksumDatum = bestand_original.checksum.checksumDatum
+    # change identificatiekenmerk (there is no way to guess this, again)
+    bestand.identificatie = bestand_original.identificatie
+    # change URLBestand, if present (there is no way to guess this, again)
+    if bestand_original.URLBestand:
+        bestand.URLBestand = bestand_original.URLBestand
+
+    assert bestand_original == bestand
 
 
 def test_serialization_chain_informatieobject(voorbeeld_archiefstuk_xml):
@@ -103,7 +135,7 @@ def test_file_saving(voorbeeld_archiefstuk_xml, tmp_path_factory):
     tmpdir = tmp_path_factory.mktemp("Output")
     outfile = tmpdir / "test archiefstuk.xml"
 
-    informatieobject = Informatieobject.from_xml(voorbeeld_archiefstuk_xml)
+    informatieobject = Informatieobject.open(voorbeeld_archiefstuk_xml)
     informatieobject.save(outfile)
 
     # MDTO uses CRLF (DOS) line endings. Convert them to UNIX line endings.
@@ -115,7 +147,7 @@ def test_file_saving(voorbeeld_archiefstuk_xml, tmp_path_factory):
     with open(outfile, "rb") as f:
         outfile_bytes = f.read()
 
-    # MDTO use double qoutes in the xml declaration, whereas lxml uses single quotes. Both are valid.
+    # MDTO uses double qoutes in the xml declaration, whereas lxml uses single quotes. Both are valid.
     # (couldn't find an easy way to change lxml's behavior here, unfortunately)
     outfile_bytes = outfile_bytes.replace(
         b"<?xml version='1.0' encoding='UTF-8'?>",
