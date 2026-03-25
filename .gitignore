@@ -1,0 +1,15 @@
+mdto/__pycache__/__init__.cpython-312.pyc
+mdto/__pycache__/classes.cpython-312.pyc
+mdto/__pycache__/gegevensgroepen.cpython-312.pyc
+mdto/__pycache__/helpers.cpython-312.pyc
+mdto/__pycache__/utilities.cpython-312.pyc
+
+mdto.egg-info/PKG-INFO
+mdto.egg-info/requires.txt
+mdto.egg-info/SOURCES.txt
+mdto.egg-info/top_level.txt
+mdto.egg-info/dependency_links.txt
+
+build/*
+
+
