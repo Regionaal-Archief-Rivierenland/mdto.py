@@ -13,3 +13,5 @@ mdto.egg-info/dependency_links.txt
 build/*
 
 
+tests/__pycache__/*
+
