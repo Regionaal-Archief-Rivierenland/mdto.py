@@ -19,3 +19,5 @@ def test_gemeentenaam_from_gemeentecode():
 
     with pytest.raises(ValueError, match=r"Name or code '.+' not found"):
         VerwijzingGegevens.gemeente("348")
+        VerwijzingGegevens.gemeente("_")
+
