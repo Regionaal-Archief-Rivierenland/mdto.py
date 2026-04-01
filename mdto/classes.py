@@ -321,7 +321,9 @@ class VerwijzingGegevens(Serializable):
         if match := re.fullmatch(rf"({code_prefix})?{code_pattern}", name_or_code.lower()):
             code_part = match.group(2)
             full_code = f"{code_prefix}{code_part}"
+            #get name from code
             tooi_naam = tooi_register.get(full_code)
+            #always return full code (i.e. code including prefix)
             tooi_code = full_code if tooi_naam else None
         # Check if it's a name
         else:
