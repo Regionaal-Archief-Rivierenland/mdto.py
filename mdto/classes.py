@@ -295,7 +295,7 @@ class VerwijzingGegevens(Serializable):
         code_prefix: str,
         name_prefix: str,
         register_name: str,
-        code_pattern = r"(\d+)"
+        code_pattern: str
     ) -> Self:
         """Helper method to create VerwijzingGegevens from TOOI registers.
 
