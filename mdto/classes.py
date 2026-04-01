@@ -5,7 +5,7 @@ import re
 from dataclasses import Field, dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, List, Self, TextIO, Type, TypeVar, Union, get_args, get_origin
+from typing import Any, List, Self, TextIO, Type, TypeVar, Union, Callable, get_args, get_origin
 
 import lxml.etree as ET
 
@@ -291,11 +291,11 @@ class VerwijzingGegevens(Serializable):
     def _create_from_tooi_register(
         cls,
         name_or_code: str,
-        register_loader,
+        register_loader: Callable[[], dict[str, str]],
         code_prefix: str,
         name_prefix: str,
         register_name: str,
-        code_pattern: str = r"(\d+)"
+        code_pattern = r"(\d+)"
     ) -> Self:
         """Helper method to create VerwijzingGegevens from TOOI registers.
 
@@ -313,42 +313,32 @@ class VerwijzingGegevens(Serializable):
         Raises:
             ValueError: If name or code not found
         """
-        import re
 
         tooi_register = register_loader()
 
         name_or_code_lower = name_or_code.lower()
         
-        # Check if it's a code (with or without prefix)
+        # Check if it's a code and if it's with or without prefix
         if match := re.fullmatch(rf"({code_prefix})?{code_pattern}", name_or_code_lower):
             code_part = match.group(2)
             full_code = f"{code_prefix}{code_part}"
-            if full_code in tooi_register:
-                tooi_naam = tooi_register[full_code]
-                tooi_code = full_code
-            else:
-                tooi_naam = None
-                tooi_code = None
+            tooi_naam = tooi_register.get(full_code)
+            tooi_code = full_code if tooi_naam else None
         # Check if it's a name
         else:
             name_key = name_or_code_lower.removeprefix(name_prefix.lower())
-            if name_key in tooi_register:
-                tooi_code = tooi_register[name_key]
-                tooi_naam = tooi_register[tooi_code]
-            else:
-                tooi_naam = None
-                tooi_code = None
+            tooi_code = tooi_register.get(name_key)
+            tooi_naam = tooi_register.get(tooi_code) if tooi_code else None
 
         if tooi_naam and tooi_code:
             return cls(
                 f"{name_prefix}{tooi_naam}",
-                IdentificatieGegevens(tooi_code, register_name),
+                IdentificatieGegevens(tooi_code, f"TOOI register {register_name} compleet"),
             )
 
         raise ValueError(
-            ("Name or code '{name_or_code}' not found in '{register_name}'. "
-             "For a list of possible values, see https://identifier.overheid.nl/tooi/set/"
-             f"{register_name.lower().replace(' ', '_').replace('register_', 'rwc_').replace('_compleet', '_compleet')}")
+            (f"Name or code '{name_or_code}' not found in 'TOOI register{register_name} compleet'. "
+             f"For a list of possible values, see https://identifier.overheid.nl/tooi/set/rwc_{register_name}_compleet")
         )
 
     @classmethod
@@ -386,7 +376,7 @@ class VerwijzingGegevens(Serializable):
             helpers.load_tooi_register_gemeenten,
             "gm",
             "Gemeente ",
-            "TOOI register gemeenten compleet",
+            "gemeenten",
             r"(\d{4})"
         )
     
@@ -415,7 +405,7 @@ class VerwijzingGegevens(Serializable):
             helpers.load_tooi_register_provincies,
             "pv",
             "Provincie ",
-            "TOOI register provincies compleet",
+            "provincies",
             r"(\d{2})"
         )
     
@@ -444,7 +434,7 @@ class VerwijzingGegevens(Serializable):
             helpers.load_tooi_register_waterschappen,
             "ws",
             "Waterschap ",
-            "TOOI register waterschappen compleet",
+            "waterschappen",
             r"(\d{2,4})"
         )
 
