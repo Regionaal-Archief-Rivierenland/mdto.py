@@ -19,7 +19,7 @@ def test_gemeentenaam_from_gemeentecode():
 
     with pytest.raises(ValueError, match=r"Name or code '.+' not found"):
         VerwijzingGegevens.gemeente("348")
-
+        VerwijzingGegevens.gemeente("_")
 
 def test_provinciecode_from_provincienaam():
     """Test creating a VerwijzingGegevens from just a provincienaam"""
@@ -54,3 +54,4 @@ def test_waterschapsnaam_from_waterschapcode():
 
     with pytest.raises(ValueError, match=r"Name or code '.+' not found"):
         VerwijzingGegevens.waterschap("348")
+
