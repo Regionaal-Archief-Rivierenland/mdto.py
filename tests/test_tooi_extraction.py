@@ -37,3 +37,20 @@ def test_provincienaam_from_provinciecode():
 
     with pytest.raises(ValueError, match=r"Name or code '.+' not found"):
         VerwijzingGegevens.provincie("348")
+
+def test_waterschapcode_from_waterschapsnaam():
+    """Test creating a VerwijzingGegevens from just a waterschapsnaam"""
+    v = VerwijzingGegevens.waterschap("WATERSCHAP hoogheemraadschap van schieland en de krimpenerwaard")
+    assert v.verwijzingIdentificatie.identificatieKenmerk == "ws0656"
+    v = VerwijzingGegevens.waterschap("veluwe")
+    assert v.verwijzingIdentificatie.identificatieKenmerk == "ws0153"
+
+def test_waterschapsnaam_from_waterschapcode():
+    """Test creating a VerwijzingGegevens from just a waterschapcode"""
+    v = VerwijzingGegevens.waterschap("0656")
+    assert v.verwijzingNaam == "Waterschap Hoogheemraadschap van Schieland en de Krimpenerwaard"
+    v = VerwijzingGegevens.waterschap("ws0153")
+    assert v.verwijzingNaam == "Waterschap Veluwe"
+
+    with pytest.raises(ValueError, match=r"Name or code '.+' not found"):
+        VerwijzingGegevens.waterschap("348")
