@@ -38,7 +38,6 @@ else:
         "\033[1;33m%s\033[1;0m" % logging.getLevelName(logging.WARNING),
     )
 
-naam_key = "https://identifier.overheid.nl/tooi/def/ont/officieleNaamExclSoort"
 
 
 @lru_cache(maxsize=1)
@@ -56,6 +55,7 @@ def load_tooi_register(json_filename: str, entity_type: str) -> dict:
     import json
 
     code_key = "https://identifier.overheid.nl/tooi/def/ont/organisatiecode"
+    naam_key = "https://identifier.overheid.nl/tooi/def/ont/officieleNaamExclSoort"
     
     json_path = importlib.resources.files("mdto.data") / json_filename
     with json_path.open("r") as f:
@@ -77,7 +77,7 @@ def load_tooi_register(json_filename: str, entity_type: str) -> dict:
     return lookup_table
 
 
-@lru_cache(maxsize=1)
+
 def load_tooi_register_gemeenten() -> dict:
     """Transforms the gemeente register JSON into a lookup table, and
     caches the result for subsequent calls.
@@ -91,7 +91,6 @@ def load_tooi_register_gemeenten() -> dict:
     return load_tooi_register("rwc_gemeenten_compleet_4.json", "Gemeente")
 
 
-@lru_cache(maxsize=1)
 def load_tooi_register_provincies() -> dict:
     """Transforms the provincie register JSON into a lookup table, and
     caches the result for subsequent calls.
@@ -105,7 +104,6 @@ def load_tooi_register_provincies() -> dict:
     return load_tooi_register("rwc_provincies_compleet_1.json", "Provincie")
 
 
-@lru_cache(maxsize=1)
 def load_tooi_register_waterschappen() -> dict:
     """Transforms the waterschap register JSON into a lookup table, and
     caches the result for subsequent calls.
