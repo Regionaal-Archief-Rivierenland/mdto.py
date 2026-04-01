@@ -337,7 +337,7 @@ class VerwijzingGegevens(Serializable):
             )
 
         raise ValueError(
-            (f"Name or code '{name_or_code}' not found in 'TOOI register{register_name} compleet'. "
+            (f"Name or code '{name_or_code}' not found in 'TOOI register {register_name} compleet'. "
              f"For a list of possible values, see https://identifier.overheid.nl/tooi/set/rwc_{register_name}_compleet")
         )
 
