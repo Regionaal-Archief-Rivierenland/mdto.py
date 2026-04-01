@@ -316,17 +316,16 @@ class VerwijzingGegevens(Serializable):
 
         tooi_register = register_loader()
 
-        name_or_code_lower = name_or_code.lower()
         
         # Check if it's a code and if it's with or without prefix
-        if match := re.fullmatch(rf"({code_prefix})?{code_pattern}", name_or_code_lower):
+        if match := re.fullmatch(rf"({code_prefix})?{code_pattern}", name_or_code.lower()):
             code_part = match.group(2)
             full_code = f"{code_prefix}{code_part}"
             tooi_naam = tooi_register.get(full_code)
             tooi_code = full_code if tooi_naam else None
         # Check if it's a name
         else:
-            name_key = name_or_code_lower.removeprefix(name_prefix.lower())
+            name_key = name_or_code.lower().removeprefix(name_prefix.lower())
             tooi_code = tooi_register.get(name_key)
             tooi_naam = tooi_register.get(tooi_code) if tooi_code else None
 
