@@ -294,6 +294,7 @@ class VerwijzingGegevens(Serializable):
         register_loader: Callable[[], dict[str, str]],
         code_prefix: str,
         name_prefix: str,
+        url: str,
         register_name: str,
         code_pattern: str
     ) -> Self:
@@ -303,7 +304,7 @@ class VerwijzingGegevens(Serializable):
             name_or_code: Name or code to look up
             register_loader: Function to load the register
             code_prefix: Prefix for the code (e.g. 'gm', 'pv', 'ws')
-            name_prefix: Prefix for the name (e.g. 'Gemeente ', 'Provincie ')
+            name_prefix: Prefix for the name (e.g. 'Gemeente', 'Provincie')
             register_name: Name of the register
             code_pattern: Regex pattern for matching codes
 
@@ -327,19 +328,19 @@ class VerwijzingGegevens(Serializable):
             tooi_code = full_code if tooi_naam else None
         # Check if it's a name
         else:
-            name_key = name_or_code.lower().removeprefix(name_prefix.lower())
+            name_key = (name_or_code.lower().removeprefix(name_prefix.lower())).strip()
             tooi_code = tooi_register.get(name_key)
             tooi_naam = tooi_register.get(tooi_code) if tooi_code else None
 
         if tooi_naam and tooi_code:
             return cls(
-                f"{name_prefix}{tooi_naam}",
-                IdentificatieGegevens(tooi_code, f"TOOI register {register_name} compleet"),
+                f"{name_prefix} {tooi_naam}",
+                IdentificatieGegevens(tooi_code, register_name),
             )
 
         raise ValueError(
-            (f"Name or code '{name_or_code}' not found in 'TOOI register {register_name} compleet'. "
-             f"For a list of possible values, see https://identifier.overheid.nl/tooi/set/rwc_{register_name}_compleet")
+            (f"Name or code '{name_or_code}' not found in '{register_name}'. "
+             f"For a list of possible values, see {url}")
         )
 
     @classmethod
@@ -375,10 +376,11 @@ class VerwijzingGegevens(Serializable):
         return cls._create_from_tooi_register(
             gemeentenaam_of_tooi_code,
             helpers.load_tooi_register_gemeenten,
-            "gm",
-            "Gemeente ",
-            "gemeenten",
-            r"(\d{4})"
+            code_prefix = "gm",
+            name_prefix = "Gemeente",
+            url = "https://identifier.overheid.nl/tooi/set/rwc_gemeenten_compleet",
+            register_name= "TOOI register Gemeenten compleet",
+            code_pattern = r"(\d{4})"
         )
     
     
@@ -404,10 +406,11 @@ class VerwijzingGegevens(Serializable):
         return cls._create_from_tooi_register(
             provincienaam_of_tooi_code,
             helpers.load_tooi_register_provincies,
-            "pv",
-            "Provincie ",
-            "provincies",
-            r"(\d{2})"
+            code_prefix = "pv",
+            name_prefix = "Provincie",
+            url = "https://identifier.overheid.nl/tooi/set/rwc_provincies_compleet",
+            register_name= "TOOI register Provincies compleet",
+            code_pattern = r"(\d{2})"
         )
     
     
@@ -433,10 +436,11 @@ class VerwijzingGegevens(Serializable):
         return cls._create_from_tooi_register(
             waterschapnaam_of_tooi_code,
             helpers.load_tooi_register_waterschappen,
-            "ws",
-            "Waterschap ",
-            "waterschappen",
-            r"(\d{2,4})"
+            code_prefix = "ws",
+            name_prefix = "Waterschap",
+            url = "https://identifier.overheid.nl/tooi/set/rwc_waterschappen_compleet",
+            register_name= "TOOI register Waterschappen compleet",
+            code_pattern = r"(\d{2,4})"
         )
 
 
