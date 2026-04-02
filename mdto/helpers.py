@@ -70,8 +70,7 @@ def load_tooi_register(json_filename: str, entity_type: str) -> dict:
             item[naam_key][0]["@value"],
             item[code_key][0]["@value"],
         )
-        naam_key_lower = naam.lower()
-        lookup_table[naam_key_lower] = code
+        lookup_table[naam.lower()] = code
         lookup_table[code] = naam
 
     return lookup_table
