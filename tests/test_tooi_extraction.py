@@ -53,5 +53,5 @@ def test_waterschapsnaam_from_waterschapcode():
     assert v.verwijzingNaam == "Waterschap Veluwe"
 
     with pytest.raises(ValueError, match=r"Name or code '.+' not found"):
-        VerwijzingGegevens.waterschap("348")
+        VerwijzingGegevens.waterschap("348785476756")
 
