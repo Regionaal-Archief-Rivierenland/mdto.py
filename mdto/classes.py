@@ -338,8 +338,8 @@ class VerwijzingGegevens(Serializable):
             )
 
         raise ValueError(
-            (f"Name or code '{name_or_code}' not found in '{register_name}'. "
-             f"For a list of possible values, see {url}")
+            f"Name or code '{name_or_code}' not found in '{register_name}'. "
+            f"For a list of possible values, see {url}"
         )
 
     @classmethod
