@@ -39,6 +39,43 @@ else:
     )
 
 
+
+
+def load_tooi_register(json_filename: str, entity_type: str) -> dict:
+    """Generic function to load TOOI register JSON into a lookup table.
+    
+    Args:
+        json_filename: Name of the JSON file in mdto.data
+        entity_type: The @type value to filter by (e.g., "Gemeente", "Provincie", "Waterschap")
+        
+    Returns:
+        dict: bidirectional lookup table mapping names to codes and vice versa
+    """
+    import importlib.resources
+    import json
+
+    code_key = "https://identifier.overheid.nl/tooi/def/ont/organisatiecode"
+    naam_key = "https://identifier.overheid.nl/tooi/def/ont/officieleNaamExclSoort"
+    
+    json_path = importlib.resources.files("mdto.data") / json_filename
+    with json_path.open("r") as f:
+        raw_dict = json.load(f)
+
+    lookup_table = {}
+    for item in raw_dict:
+        if not f"https://identifier.overheid.nl/tooi/def/ont/{entity_type}" in item["@type"]:
+            continue
+
+        naam, code = (
+            item[naam_key][0]["@value"],
+            item[code_key][0]["@value"],
+        )
+        naam_key_lower = naam.lower()
+        lookup_table[naam_key_lower] = code
+        lookup_table[code] = naam
+
+    return lookup_table
+
 @lru_cache(maxsize=1)
 def load_tooi_register_gemeenten() -> dict:
     """Transforms the gemeente register JSON into a lookup table, and
@@ -49,37 +86,34 @@ def load_tooi_register_gemeenten() -> dict:
     Returns:
         dict: bidirectional lookup table that maps TOOI gemeentenamen
               to TOOI codes, and vice versa
-
     """
-    import importlib.resources  # importing here improves initialization speed
-    import json
+    return load_tooi_register("rwc_gemeenten_compleet_4.json", "Gemeente")
 
-    gemeentenaam_key = (
-        "https://identifier.overheid.nl/tooi/def/ont/officieleNaamExclSoort"
-    )
-    gemeentecode_key = "https://identifier.overheid.nl/tooi/def/ont/gemeentecode"
+@lru_cache(maxsize=1)
+def load_tooi_register_provincies() -> dict:
+    """Transforms the provincie register JSON into a lookup table, and
+    caches the result for subsequent calls.
 
-    json_path = importlib.resources.files("mdto.data") / "rwc_gemeenten_compleet_4.json"
-    with json_path.open("r") as f:
-        raw_dict = json.load(f)
+    Caching this table makes a big difference in performance.
 
-    # transform into a bidirectional lookup table
-    gemeente_lookup_table = {}
-    for gem in raw_dict:
-        # the JSON records things other than gemeente entries
-        if not "https://identifier.overheid.nl/tooi/def/ont/Gemeente" in gem["@type"]:
-            continue
+    Returns:
+        dict: bidirectional lookup table that maps TOOI provincienamen
+              to TOOI codes, and vice versa
+    """
+    return load_tooi_register("rwc_provincies_compleet_1.json", "Provincie")
 
-        naam, code = (
-            gem[gemeentenaam_key][0]["@value"],
-            gem[gemeentecode_key][0]["@value"],
-        )
-        # use lowercase version as key
-        naam_key = naam.lower()
-        gemeente_lookup_table[naam_key] = code
-        gemeente_lookup_table[code] = naam
+@lru_cache(maxsize=1)
+def load_tooi_register_waterschappen() -> dict:
+    """Transforms the waterschap register JSON into a lookup table, and
+    caches the result for subsequent calls.
 
-    return gemeente_lookup_table
+    Caching this table makes a big difference in performance.
+
+    Returns:
+        dict: bidirectional lookup table that maps TOOI waterschapsnamen
+              to TOOI codes, and vice versa
+    """
+    return load_tooi_register("rwc_waterschappen_compleet_2.json", "Waterschap")
 
 
 def process_file(file_or_filename: TextIO | str) -> TextIO:

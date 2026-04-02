@@ -5,7 +5,7 @@ import re
 from dataclasses import Field, dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, List, Self, TextIO, Type, TypeVar, Union, get_args, get_origin
+from typing import Any, List, Self, TextIO, Type, TypeVar, Union, Callable, get_args, get_origin
 
 import lxml.etree as ET
 
@@ -288,6 +288,63 @@ class VerwijzingGegevens(Serializable):
             )
 
     @classmethod
+    def _create_from_tooi_register(
+        cls,
+        name_or_code: str,
+        register_loader: Callable[[], dict[str, str]],
+        code_prefix: str,
+        name_prefix: str,
+        url: str,
+        register_name: str,
+    ) -> Self:
+        """Helper method to create VerwijzingGegevens from TOOI registers.
+
+        Args:
+            name_or_code: Name or code to look up
+            register_loader: Function to load the register
+            code_prefix: Prefix for the code (e.g. 'gm', 'pv', 'ws')
+            name_prefix: Prefix for the name (e.g. 'Gemeente', 'Provincie')
+            register_name: Name of the register
+            code_pattern: Regex pattern for matching codes
+
+        Returns:
+            VerwijzingGegevens instance
+
+        Raises:
+            ValueError: If name or code not found
+        """
+
+        tooi_register = register_loader()
+
+        
+        # Check if it's a code and if it's with or without prefix
+        if match := re.fullmatch(rf"({code_prefix})?(\d+)", name_or_code.lower()):
+            code_part = match.group(2)
+            full_code = f"{code_prefix}{code_part}"
+            # get name from code
+            tooi_naam = tooi_register.get(full_code)
+            # always return full code (i.e. code including prefix)
+            tooi_code = full_code if tooi_naam else None
+        # Check if it's a name
+        else:
+            name_key = (name_or_code.lower().removeprefix(name_prefix.lower())).strip()
+            # get code from name_key
+            tooi_code = tooi_register.get(name_key)
+            # get full name from code
+            tooi_naam = tooi_register.get(tooi_code) if tooi_code else None
+
+        if tooi_naam and tooi_code:
+            return cls(
+                f"{name_prefix} {tooi_naam}",
+                IdentificatieGegevens(tooi_code, register_name),
+            )
+
+        raise ValueError(
+            (f"Name or code '{name_or_code}' not found in '{register_name}'. "
+             f"For a list of possible values, see {url}")
+        )
+
+    @classmethod
     def gemeente(cls, gemeentenaam_of_tooi_code: str) -> Self:
         """Create a VerwijzingGegevens that references a municipality
         by its official name and code from the TOOI register.
@@ -317,31 +374,71 @@ class VerwijzingGegevens(Serializable):
         Raises:
             ValueError: Municipality name or code was not found in the TOOI register.
         """
-        tooi_register = helpers.load_tooi_register_gemeenten()
+        return cls._create_from_tooi_register(
+            gemeentenaam_of_tooi_code,
+            helpers.load_tooi_register_gemeenten,
+            code_prefix = "gm",
+            name_prefix = "Gemeente",
+            url = "https://identifier.overheid.nl/tooi/set/rwc_gemeenten_compleet",
+            register_name= "TOOI register Gemeenten compleet",
+        )
+    
+    
+    @classmethod
+    def provincie(cls, provincienaam_of_tooi_code: str) -> Self:
+        """Create a VerwijzingGegevens that references a province
+        by its official name and code from the TOOI register.
 
-        if match := re.fullmatch(r"(gm)?(\d{4})", gemeentenaam_of_tooi_code.lower()):
-            # get name from code
-            tooi_code = match.group(2)
-            tooi_naam = tooi_register.get(tooi_code)
-        else:
-            # get code from name
-            tooi_code = tooi_register.get(
-                gemeentenaam_of_tooi_code.lower().removeprefix("gemeente ")
-            )
-            # get pretty name while we're at it
-            tooi_naam = tooi_register[tooi_code] if tooi_code else None
+        Accepts either a province name (e.g. 'Gelderland') or
+        a code (e.g. 'pv12', '12').
 
-        if tooi_naam and tooi_code:
-            return cls(
-                f"Gemeente {tooi_naam}",
-                IdentificatieGegevens(
-                    f"gm{tooi_code}", "TOOI register gemeenten compleet"
-                ),
-            )
+        Example:
+            ```python
+            >>> gelderland = VerwijzingGegevens.provincie('Gelderland')
+            >>> gelderland.verwijzingIdentificatie
+            IdentificatieGegevens('pv12', 'TOOI register provincies compleet')
+            # create a reference to a province from its TOOI code instead of name
+            >>> noord_holland = VerwijzingGegevens.provincie('02')
+            >>> noord_holland.verwijzingNaam
+            Provincie Noord-Holland
+            ```
+        """
+        return cls._create_from_tooi_register(
+            provincienaam_of_tooi_code,
+            helpers.load_tooi_register_provincies,
+            code_prefix = "pv",
+            name_prefix = "Provincie",
+            url = "https://identifier.overheid.nl/tooi/set/rwc_provincies_compleet",
+            register_name= "TOOI register Provincies compleet",
+        )
+    
+    
+    @classmethod
+    def waterschap(cls, waterschapnaam_of_tooi_code: str) -> Self:
+        """Create a VerwijzingGegevens that references a waterschap
+        by its official name and code from the TOOI register.
 
-        raise ValueError(
-            f"Name or code '{gemeentenaam_of_tooi_code}' not found in 'TOOI register gemeenten compleet'. "
-            "For a list of possible values, see https://identifier.overheid.nl/tooi/set/rwc_gemeenten_compleet"
+        Accepts either a waterschap name (e.g. 'Waterschap Rivierenland') or
+        a code (e.g. 'ws20', '20').
+
+        Example:
+            ```python
+            >>> rivierenland = VerwijzingGegevens.waterschap('Rivierenland')
+            >>> rivierenland.verwijzingIdentificatie
+            IdentificatieGegevens('ws20', 'TOOI register waterschappen compleet')
+            # create a reference to a waterschap from its TOOI code instead of name
+            >>> hoogheemraadschap_hollands_noorderkwartier = VerwijzingGegevens.waterschap('01')
+            >>> hoogheemraadschap_hollands_noorderkwartier.verwijzingNaam
+            Waterschap Hoogheemraadschap Hollands Noorderkwartier
+            ```
+        """
+        return cls._create_from_tooi_register(
+            waterschapnaam_of_tooi_code,
+            helpers.load_tooi_register_waterschappen,
+            code_prefix = "ws",
+            name_prefix = "Waterschap",
+            url = "https://identifier.overheid.nl/tooi/set/rwc_waterschappen_compleet",
+            register_name= "TOOI register Waterschappen compleet",
         )
 
 
