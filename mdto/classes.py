@@ -296,7 +296,6 @@ class VerwijzingGegevens(Serializable):
         name_prefix: str,
         url: str,
         register_name: str,
-        code_pattern: str
     ) -> Self:
         """Helper method to create VerwijzingGegevens from TOOI registers.
 
@@ -319,19 +318,19 @@ class VerwijzingGegevens(Serializable):
 
         
         # Check if it's a code and if it's with or without prefix
-        if match := re.fullmatch(rf"({code_prefix})?{code_pattern}", name_or_code.lower()):
+        if match := re.fullmatch(rf"({code_prefix})?(\d+)", name_or_code.lower()):
             code_part = match.group(2)
             full_code = f"{code_prefix}{code_part}"
-            #get name from code
+            # get name from code
             tooi_naam = tooi_register.get(full_code)
-            #always return full code (i.e. code including prefix)
+            # always return full code (i.e. code including prefix)
             tooi_code = full_code if tooi_naam else None
         # Check if it's a name
         else:
             name_key = (name_or_code.lower().removeprefix(name_prefix.lower())).strip()
-            #get code from name_key
+            # get code from name_key
             tooi_code = tooi_register.get(name_key)
-            #get full name from code
+            # get full name from code
             tooi_naam = tooi_register.get(tooi_code) if tooi_code else None
 
         if tooi_naam and tooi_code:
@@ -382,7 +381,6 @@ class VerwijzingGegevens(Serializable):
             name_prefix = "Gemeente",
             url = "https://identifier.overheid.nl/tooi/set/rwc_gemeenten_compleet",
             register_name= "TOOI register Gemeenten compleet",
-            code_pattern = r"(\d{4})"
         )
     
     
@@ -412,7 +410,6 @@ class VerwijzingGegevens(Serializable):
             name_prefix = "Provincie",
             url = "https://identifier.overheid.nl/tooi/set/rwc_provincies_compleet",
             register_name= "TOOI register Provincies compleet",
-            code_pattern = r"(\d{2})"
         )
     
     
@@ -442,7 +439,6 @@ class VerwijzingGegevens(Serializable):
             name_prefix = "Waterschap",
             url = "https://identifier.overheid.nl/tooi/set/rwc_waterschappen_compleet",
             register_name= "TOOI register Waterschappen compleet",
-            code_pattern = r"(\d{2,4})"
         )
 
 
