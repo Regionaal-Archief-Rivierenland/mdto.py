@@ -76,12 +76,11 @@ def load_tooi_register(json_filename: str, entity_type: str) -> dict:
 
     return lookup_table
 
+# Caching the result of these functions makes a big difference in performance
 @lru_cache(maxsize=1)
 def load_tooi_register_gemeenten() -> dict:
     """Transforms the gemeente register JSON into a lookup table, and
     caches the result for subsequent calls.
-
-    Caching this table makes a big difference in performance.
 
     Returns:
         dict: bidirectional lookup table that maps TOOI gemeentenamen
@@ -94,8 +93,6 @@ def load_tooi_register_provincies() -> dict:
     """Transforms the provincie register JSON into a lookup table, and
     caches the result for subsequent calls.
 
-    Caching this table makes a big difference in performance.
-
     Returns:
         dict: bidirectional lookup table that maps TOOI provincienamen
               to TOOI codes, and vice versa
@@ -106,8 +103,6 @@ def load_tooi_register_provincies() -> dict:
 def load_tooi_register_waterschappen() -> dict:
     """Transforms the waterschap register JSON into a lookup table, and
     caches the result for subsequent calls.
-
-    Caching this table makes a big difference in performance.
 
     Returns:
         dict: bidirectional lookup table that maps TOOI waterschapsnamen

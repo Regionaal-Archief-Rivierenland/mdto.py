@@ -305,7 +305,6 @@ class VerwijzingGegevens(Serializable):
             code_prefix: Prefix for the code (e.g. 'gm', 'pv', 'ws')
             name_prefix: Prefix for the name (e.g. 'Gemeente', 'Provincie')
             register_name: Name of the register
-            code_pattern: Regex pattern for matching codes
 
         Returns:
             VerwijzingGegevens instance
@@ -316,7 +315,6 @@ class VerwijzingGegevens(Serializable):
 
         tooi_register = register_loader()
 
-        
         # Check if it's a code and if it's with or without prefix
         if match := re.fullmatch(rf"({code_prefix})?(\d+)", name_or_code.lower()):
             code_part = match.group(2)
