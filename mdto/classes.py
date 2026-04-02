@@ -304,6 +304,7 @@ class VerwijzingGegevens(Serializable):
             register_loader: Function to load the register
             code_prefix: Prefix for the code (e.g. 'gm', 'pv', 'ws')
             name_prefix: Prefix for the name (e.g. 'Gemeente', 'Provincie')
+            url: URL of the register
             register_name: Name of the register
 
         Returns:
