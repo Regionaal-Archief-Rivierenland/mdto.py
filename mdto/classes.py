@@ -329,7 +329,9 @@ class VerwijzingGegevens(Serializable):
         # Check if it's a name
         else:
             name_key = (name_or_code.lower().removeprefix(name_prefix.lower())).strip()
+            #get code from name_key
             tooi_code = tooi_register.get(name_key)
+            #get full name from code
             tooi_naam = tooi_register.get(tooi_code) if tooi_code else None
 
         if tooi_naam and tooi_code:
