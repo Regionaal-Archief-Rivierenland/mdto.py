@@ -301,9 +301,9 @@ class VerwijzingGegevens(Serializable):
 
         Args:
             name_or_code: Name or code to look up
-            register_loader: Function to load the register
-            code_prefix: Prefix for the code (e.g. 'gm', 'pv', 'ws')
-            name_prefix: Prefix for the name (e.g. 'Gemeente', 'Provincie')
+            register_loader: Function that loads the register
+            code_prefix: Code prefix (e.g. 'gm', 'pv')
+            name_prefix: Name prefix (e.g. 'Gemeente', 'Provincie')
             url: URL of the register
             register_name: Name of the register
 
@@ -553,7 +553,7 @@ class ChecksumGegevens(Serializable):
         """Convience function for creating ChecksumGegegevens objects.
 
         Takes a file-like object or path to file, and then computes the requisite
-        checksum metadata (i.e.  `checksumAlgoritme`, `checksumWaarde`, and
+        checksum metadata (i.e. `checksumAlgoritme`, `checksumWaarde`, and
         `checksumDatum`) from that file.
 
         Example:
