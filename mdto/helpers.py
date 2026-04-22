@@ -39,8 +39,6 @@ else:
     )
 
 
-
-
 def load_tooi_register(json_filename: str, entity_type: str) -> dict:
     """Generic function to load TOOI register JSON into a lookup table.
     
