@@ -73,9 +73,12 @@ def test_valid_dates(date_str):
 @pytest.mark.parametrize(
     "date_str",
     [
+        "99-10", # year must have four digits
+        "2001-9", # months must be zero padded
         "2001-13",  # no 13th month
-        "99-10",  # year must have four digits
+        "2001-09-9", # days must be zero padded
         "2020-10+25:00",  # invalid TZ
+        "2020-10Z01:00",  # invalid TZ
         "2001-10-12T12:05:70",  # invalid seconds
     ],
 )

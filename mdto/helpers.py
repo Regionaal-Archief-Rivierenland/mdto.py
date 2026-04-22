@@ -301,28 +301,27 @@ date_fmts = date_fmt_precise + [
     ("%Y-%m", 7),
 ]
 datetime_fmts = date_fmts + [("%Y-%m-%dT%H:%M:%S", 19)]
-tz_regex = re.compile(r"(.*?)(Z|[+-](\d{2}):(\d{2}))?")
+tz_regex = re.compile(r"(.*?)(Z|[+-]\d{2}:\d{2})?")
+
+def str_to_datetime(date: str, fmts: list[Tuple] = datetime_fmts) -> datetime:
+    """Convert string to datetime object. Assumes `date` is already validated."""
+    date, tz = tz_regex.fullmatch(date).groups()
+    tz = tz or ''
+
+    for fmt, fmt_len in fmts:
+        if len(date) == fmt_len:
+            return datetime.strptime(date + tz, f"{fmt}{tz and '%z'}")
+
+    raise ValueError
 
 
 def _valid_mdto_date(date: str, fmts: list[tuple]) -> bool:
     """Generic date checking function; use valid_mdto_datetime or valid_mdto_date"""
-    # strip and capture timezone info
-    date, _, tz_info_hh, tz_info_mm = tz_regex.fullmatch(date).groups()
-
-    #  verify timezone information
-    if tz_info_mm:
-        # check if in range of hh:mm
-        if int(tz_info_mm) > 59 or int(tz_info_hh) > 23:
-            return False
-
-    for fmt, expected_len in fmts:
-        try:
-            # check for precense of zero padding
-            if len(date) == expected_len:
-                datetime.strptime(date, fmt)
-                return True
-        except ValueError:  # striptime() raises this on misformatted dates
-            continue
+    try:
+        str_to_datetime(date, fmts)
+        return True
+    except ValueError:  # striptime() raises this on misformatted dates
+        return False
 
     return False
 
