@@ -43,7 +43,7 @@ def load_tooi_register(json_filename: str, entity_type: str) -> dict:
     """Generic function to load TOOI register JSON into a lookup table.
     
     Args:
-        json_filename: Name of the JSON file (should live in mdto/data)
+        json_filename: Name of JSON file (should live in mdto/data/)
         entity_type: The @type value to filter by (e.g. "Gemeente", "Provincie")
         
     Returns:
