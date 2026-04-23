@@ -1090,6 +1090,17 @@ class Informatieobject(Object, Serializable):
                 "See https://en.wikipedia.org/wiki/IETF_language_tag for more information.",
             )
 
+        # see https://www.nationaalarchief.nl/archiveren/mdto/bewaartermijn
+        te_vernietigen = (
+            self.waardering.begripLabel.lower() == "tijdelijk te bewaren"
+            or self.waardering.begripCode.lower() == "v"
+        )
+        if te_vernietigen and not self.bewaartermijn:
+            helpers.logger.warning(
+                f"Object is marked as '{self.waardering.begripLabel}',"
+                'but no retention period ("bewaartermijn") has been specified'
+            )
+
 
 @dataclass
 class Bestand(Object, Serializable):
