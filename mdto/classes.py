@@ -313,7 +313,6 @@ class VerwijzingGegevens(Serializable):
         Raises:
             ValueError: If name or code not found
         """
-
         tooi_register = register_loader()
 
         # Check if it's a code and if it's with or without prefix
