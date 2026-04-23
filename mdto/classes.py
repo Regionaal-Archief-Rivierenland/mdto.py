@@ -491,7 +491,7 @@ class TermijnGegevens(Serializable):
             )
 
         if self.termijnEinddatum and not helpers.valid_mdto_date(self.termijnEinddatum):
-            raise DateValidationError(
+                raise DateValidationError(
                 ["termijnEinddatum"],
                 self.termijnEinddatum,
                 [f for f, _ in helpers.date_fmts],
@@ -502,7 +502,29 @@ class TermijnGegevens(Serializable):
                 ["termijnLooptijd"],
                 f"'{self.termijnLooptijd}' is not a valid duration. See "
                 "https://www.w3.org/TR/xmlschema-2/#duration for more information.",
+
             )
+
+        if self.termijnStartdatumLooptijd and self.termijnEinddatum:
+            begindatum = helpers.str_to_datetime(self.termijnStartdatumLooptijd)
+            einddatum = helpers.str_to_datetime(self.termijnEinddatum)
+            if einddatum < begindatum:
+                raise ValidationError(
+                    ["termijnEinddatum"],
+                    f"Date in termijnEinddatum ({self.termijnEinddatum}) may not be prior to"
+                    f" date in termijnStartdatumLooptijd ({self.termijnStartdatumLooptijd})",
+                )
+
+        # see https://www.nationaalarchief.nl/archiveren/mdto/termijnEinddatum
+        looptijd_and_startdatum_exist = self.termijnLooptijd and self.termijnStartdatumLooptijd
+        # ¬ (P or Q) = ¬P and ¬Q
+        if not (self.termijnEinddatum or looptijd_and_startdatum_exist):
+            raise ValidationError(
+                ["termijnEinddatum"],
+                "termijnEinddatum may only be empty if both termijnStartdatumLooptijd"
+                " and termijnLooptijd have a value.",
+            )
+
 
 
 @dataclass

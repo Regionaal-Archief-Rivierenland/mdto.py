@@ -112,6 +112,27 @@ def test_invalid_durations(duration_str):
     assert not valid_duration(duration_str)
 
 
+def test_invalid_termijn_gegevens():
+    """Test if invalid TermijnGegevens objects raise. For rules, see
+    https://www.nationaalarchief.nl/archiveren/mdto/termijnEinddatum."""
+
+    # A looptijd without a start date is logically incoherent
+    termijn = TermijnGegevens(termijnLooptijd="P20Y")
+    with pytest.raises(ValidationError, match="termijnEinddatum.*empty"):
+        termijn.validate()
+
+    begindatum = "2012-02-20"
+    einddatum  = "2012-02-19"  # this is logically impossible
+    termijn = TermijnGegevens(
+        termijnStartdatumLooptijd=begindatum, termijnEinddatum=einddatum
+    )
+    with pytest.raises(ValidationError) as err:
+        termijn.validate()
+
+    err = str(err.value)
+    assert begindatum in err
+    assert einddatum in err
+
 def test_date_validation_error_message():
     """Check if DateValidationError message contains the essential info"""
     checksum = ChecksumGegevens(
