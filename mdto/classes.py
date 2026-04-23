@@ -479,7 +479,6 @@ class TermijnGegevens(Serializable):
     termijnEinddatum: str = None
 
     def validate(self) -> None:
-        # FIXME: get a way to retrieve a more complete path?
         super().validate()
 
         if self.termijnStartdatumLooptijd and not helpers.valid_mdto_date_precise(
