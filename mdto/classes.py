@@ -648,7 +648,7 @@ class DekkingInTijdGegevens(Serializable):
 
         if not helpers.valid_mdto_date(self.dekkingInTijdBegindatum):
             raise DateValidationError(
-                ["Informatieobject", "dekkingInTijd", "dekkingInTijdBegindatum"],
+                ["dekkingInTijdBegindatum"],
                 self.dekkingInTijdBegindatum,
                 [f for f, _ in helpers.date_fmts],
             )
@@ -656,7 +656,7 @@ class DekkingInTijdGegevens(Serializable):
         if self.dekkingInTijdEinddatum:
             if not helpers.valid_mdto_date(self.dekkingInTijdEinddatum):
                 raise DateValidationError(
-                    ["Informatieobject", "dekkingInTijd", "dekkingInTijdEinddatum"],
+                    ["dekkingInTijdEinddatum"],
                     self.dekkingInTijdEinddatum,
                     [f for f, _ in helpers.date_fmts],
                 )
@@ -666,7 +666,7 @@ class DekkingInTijdGegevens(Serializable):
             einddatum = helpers.str_to_datetime(self.dekkingInTijdEinddatum)
             if einddatum < begindatum:
                 raise ValidationError(
-                    ["Informatieobject", "dekkingInTijd", "dekkingInTijdEinddatum"],
+                    ["dekkingInTijdEinddatum"],
                     f"Date in dekkingInTijdEinddatum ({self.dekkingInTijdEinddatum}) may not"
                     f" be prior to date in dekkingInTijdBegindatum ({self.dekkingInTijdBegindatum})",
                 )
