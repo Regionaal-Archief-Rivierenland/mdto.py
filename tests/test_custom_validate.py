@@ -98,6 +98,8 @@ def test_invalid_dates(date_str):
 def test_valid_durations(duration_str):
     assert valid_duration(duration_str)
 
+
+# fmt: off
 @pytest.mark.parametrize(
     "duration_str",
     [
@@ -109,6 +111,7 @@ def test_valid_durations(duration_str):
         "-P10Y",          # negative durations are unsupported since they don't make semantic sense within MDTO
     ]
 )
+# fmt: on
 def test_invalid_durations(duration_str):
     assert not valid_duration(duration_str)
 
