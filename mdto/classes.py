@@ -1242,6 +1242,39 @@ class Bestand(Object, Serializable):
             verwijzing_obj,
         )
 
+    # this should arguebly be part of .validate() but that would create
+    # unnecessary computational costs in some scenarios, e.g. when creating
+    # Bestand-objecten yourself.
+    def verify_checksum(self) -> bool:
+        """Verify correctness of the checksum in this Bestand-object, by checking it against a newly
+        calculated checksum. The new checksum is calculated using the algorithm specified in the metadata
+        associated with this Bestand-object.
+
+        Returns:
+            bool: Whether the calcuted checksum value matches the one in this
+                  Bestand's metadata
+
+        Raises:
+            FileNotFoundError: Bestand-object is not associated with a XML file
+        """
+        if not self._srcfile:
+            raise FileNotFoundError(
+                "Bestand-object is not associated with a XML file. "
+                '(hint: did you use Bestand.open("foo.bestand.mdto.xml") to create this object?)'
+            )
+
+        algorithm = self.checksum.checksumAlgoritme.begripLabel.lower()
+        algorithm = algorithm.replace("sha-", "sha")
+        # assuming self.naam holds the filename
+        calculated_checksum = ChecksumGegevens.from_file(
+            Path(self._srcfile).parent / self.naam, algorithm
+        )
+
+        if calculated_checksum.checksumWaarde == self.checksum.checksumWaarde:
+            return True
+        else:
+            return False
+
 
 def _construct_deserialization_classmethods():
     """
