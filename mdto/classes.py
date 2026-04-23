@@ -653,14 +653,23 @@ class DekkingInTijdGegevens(Serializable):
                 [f for f, _ in helpers.date_fmts],
             )
 
-        if self.dekkingInTijdEinddatum and not helpers.valid_mdto_date(
-            self.dekkingInTijdEinddatum
-        ):
-            raise DateValidationError(
-                ["Informatieobject", "dekkingInTijd", "dekkingInTijdEinddatum"],
-                self.dekkingInTijdEinddatum,
-                [f for f, _ in helpers.date_fmts],
-            )
+        if self.dekkingInTijdEinddatum:
+            if not helpers.valid_mdto_date(self.dekkingInTijdEinddatum):
+                raise DateValidationError(
+                    ["Informatieobject", "dekkingInTijd", "dekkingInTijdEinddatum"],
+                    self.dekkingInTijdEinddatum,
+                    [f for f, _ in helpers.date_fmts],
+                )
+
+            # see https://www.nationaalarchief.nl/archiveren/mdto/dekkingInTijdEinddatum
+            begindatum = helpers.str_to_datetime(self.dekkingInTijdBegindatum)
+            einddatum = helpers.str_to_datetime(self.dekkingInTijdEinddatum)
+            if einddatum < begindatum:
+                raise ValidationError(
+                    ["Informatieobject", "dekkingInTijd", "dekkingInTijdEinddatum"],
+                    f"Date in dekkingInTijdEinddatum ({self.dekkingInTijdEinddatum}) may not"
+                    f" be prior to date in dekkingInTijdBegindatum ({self.dekkingInTijdBegindatum})",
+                )
 
 
 @dataclass

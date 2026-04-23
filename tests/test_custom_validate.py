@@ -112,6 +112,23 @@ def test_invalid_durations(duration_str):
     assert not valid_duration(duration_str)
 
 
+def test_invalid_dekking_in_tijd_gegevens():
+    """An end date that lies before a start date should raise."""
+    begindatum = "2012-02-20"
+    einddatum  = "2012-02-19" # this is logically impossible
+    dekking = DekkingInTijdGegevens(
+        dekkingInTijdType=BegripGegevens("nvt", VerwijzingGegevens("nvt")),
+        dekkingInTijdBegindatum=begindatum,
+        dekkingInTijdEinddatum=einddatum,
+    )
+
+    with pytest.raises(ValidationError) as err:
+        dekking.validate()
+
+    err = str(err.value)
+    assert begindatum in err
+    assert einddatum in err
+
 def test_invalid_termijn_gegevens():
     """Test if invalid TermijnGegevens objects raise. For rules, see
     https://www.nationaalarchief.nl/archiveren/mdto/termijnEinddatum."""
