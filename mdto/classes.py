@@ -315,21 +315,18 @@ class VerwijzingGegevens(Serializable):
         """
         tooi_register = register_loader()
 
-        # Check if it's a code and if it's with or without prefix
+        # determine if `name_or_code` is a name or a code
         if match := re.fullmatch(rf"({code_prefix})?(\d+)", name_or_code.lower()):
             code_part = match.group(2)
-            full_code = f"{code_prefix}{code_part}"
-            # get name from code
-            tooi_naam = tooi_register.get(full_code)
-            # always return full code (i.e. code including prefix)
-            tooi_code = full_code if tooi_naam else None
-        # Check if it's a name
+            # always return full code (i.e. prefix + code)
+            tooi_code = f"{code_prefix}{code_part}"
+            tooi_naam = tooi_register.get(tooi_code)
         else:
-            name_key = (name_or_code.lower().removeprefix(name_prefix.lower())).strip()
+            name_key = name_or_code.lower().removeprefix(name_prefix.lower()).strip()
             # get code from name_key
             tooi_code = tooi_register.get(name_key)
             # get full name from code
-            tooi_naam = tooi_register.get(tooi_code) if tooi_code else None
+            tooi_naam = tooi_register.get(tooi_code)
 
         if tooi_naam and tooi_code:
             return cls(
