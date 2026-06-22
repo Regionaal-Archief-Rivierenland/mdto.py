@@ -73,8 +73,8 @@ class Serializable:
                 continue
 
             cls_name = self.__class__.__name__
-            _ValidationError = (
-                lambda msg: ValidationError([cls_name, field_name], msg, self._srcfile)
+            _ValidationError = lambda msg: (
+                ValidationError([cls_name, field_name], msg, self._srcfile)
                 if cls_name in ["Informatieobject", "Bestand"]
                 else ValidationError([field_name], msg)
             )
@@ -498,7 +498,6 @@ class TermijnGegevens(Serializable):
                 ["termijnLooptijd"],
                 f"'{self.termijnLooptijd}' is not a valid duration. See "
                 "https://www.w3.org/TR/xmlschema-2/#duration for more information.",
-
             )
 
         if self.termijnStartdatumLooptijd and self.termijnEinddatum:
@@ -512,7 +511,9 @@ class TermijnGegevens(Serializable):
                 )
 
         # see https://www.nationaalarchief.nl/archiveren/mdto/termijnEinddatum
-        looptijd_and_startdatum_exist = self.termijnLooptijd and self.termijnStartdatumLooptijd
+        looptijd_and_startdatum_exist = (
+            self.termijnLooptijd and self.termijnStartdatumLooptijd
+        )
         # ¬ (P or Q) = ¬P and ¬Q
         if not (self.termijnEinddatum or looptijd_and_startdatum_exist):
             raise ValidationError(
@@ -520,7 +521,6 @@ class TermijnGegevens(Serializable):
                 "termijnEinddatum may only be empty if both termijnStartdatumLooptijd"
                 " and termijnLooptijd have a value.",
             )
-
 
 
 @dataclass
@@ -812,7 +812,6 @@ class Object(Serializable):
         children = super().to_xml(root)
         mdto.append(children)
         return mdto
-
 
     def validate(self) -> None:
         super().validate()
