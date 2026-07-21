@@ -13,6 +13,7 @@ from . import helpers
 
 # globals
 MDTO_MAX_NAAM_LENGTH = 80
+MDTO_NAMESPACE = "https://www.nationaalarchief.nl/mdto"
 
 # needed to inform LSPs about @classmethod return types
 ObjectT = TypeVar("ObjectT", bound="Object")
@@ -145,7 +146,7 @@ class Serializable:
         Returns:
             ET.Element: XML serialization of object with new root tag
         """
-        root_elem = ET.Element(root)
+        root_elem = ET.Element( f"{{{MDTO_NAMESPACE}}}{root}", nsmap={ None: MDTO_NAMESPACE } )
         # get dataclass fields, but in the order required by the MDTO XSD
         fields = self._mdto_ordered_fields()
 
@@ -167,7 +168,7 @@ class Serializable:
                     root_elem.append(val.to_xml(field_name))
                 else:
                     # micro-optim: create subelem and .text content in one go
-                    ET.SubElement(root_elem, field_name).text = str(val)
+                    ET.SubElement(root_elem, f"{{{MDTO_NAMESPACE}}}{field_name}").text = str(val)
 
         return root_elem
 
@@ -795,12 +796,12 @@ class Object(Serializable):
         # construct attributes of <MDTO>
         xsi_ns = "http://www.w3.org/2001/XMLSchema-instance"
         nsmap = {
-            None: "https://www.nationaalarchief.nl/mdto",  # default namespace (i.e. xmlns=https...)
+            None: MDTO_NAMESPACE,  # default namespace (i.e. xmlns=https...)
             "xsi": xsi_ns,
         }
 
         # create <MDTO>
-        mdto = ET.Element("MDTO", nsmap=nsmap)
+        mdto = ET.Element(f"{{{MDTO_NAMESPACE}}}MDTO", nsmap=nsmap)
 
         # set schemaLocation attribute of <MDTO>
         mdto.set(
