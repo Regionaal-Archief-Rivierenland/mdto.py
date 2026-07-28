@@ -289,9 +289,9 @@ def valid_url(url: str) -> bool:
     Returns:
         bool: whether the URL(s) are RFC 3986 compliant URIs
     """
-    from validators import url as _valid_url
+    from rfc3986 import is_valid_uri
 
-    return _valid_url(url)
+    return is_valid_uri(url)
 
 
 # contains (datefmt, len), in order to ensure precense of zero padded months/days
