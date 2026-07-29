@@ -212,7 +212,7 @@ def mimetypeinfo(file: str | Path) -> BegripGegevens:
           - `begripCode`: The file's MIME type (top-level type + subtype)
           - `begripBegrippenLijst`: A reference to the IANA registry
     """
-    import importlib
+    import importlib.util
     from mdto.gegevensgroepen import BegripGegevens, VerwijzingGegevens
 
     if importlib.util.find_spec("magic"):
