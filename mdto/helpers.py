@@ -41,11 +41,11 @@ else:
 
 def load_tooi_register(json_filename: str, entity_type: str) -> dict:
     """Generic function to load TOOI register JSON into a lookup table.
-    
+
     Args:
         json_filename: Name of JSON file (should live in mdto/data/)
         entity_type: The @type value to filter by (e.g. "Gemeente", "Provincie")
-        
+
     Returns:
         dict: bidirectional lookup table mapping names to codes and vice versa
     """
@@ -54,7 +54,7 @@ def load_tooi_register(json_filename: str, entity_type: str) -> dict:
 
     code_key = "https://identifier.overheid.nl/tooi/def/ont/organisatiecode"
     naam_key = "https://identifier.overheid.nl/tooi/def/ont/officieleNaamExclSoort"
-    
+
     json_path = importlib.resources.files("mdto.data") / json_filename
     with json_path.open("r") as f:
         raw_dict = json.load(f)
@@ -281,17 +281,93 @@ def detect_verwijzing(informatieobject: TextIO | str) -> VerwijzingGegevens:
 
 
 def valid_url(url: str) -> bool:
-    """Checks if URL(s) are RFC 3986 compliant URIs.
+   """Checks if URL(s) are RFC 3986 compliant URIs.
 
-    Args:
-        url (str): URL or URLs to check
+   Args:
+       url (str): URL or URLs to check
 
-    Returns:
-        bool: whether the URL(s) are RFC 3986 compliant URIs
-    """
-    from rfc3986 import is_valid_uri
+   Returns:
+       bool: whether the URL(s) are RFC 3986 compliant URIs
+   """
 
-    return is_valid_uri(url)
+   # Een xsd:anyURI mag volgens W3C geen losse '#' fragment-indicators achter elkaar hebben,
+   # en elk '%' teken MOET gevolgd worden door twee hex-karakters (0-9A-Fa-f).
+   #
+   # - \s zoekt naar verboden ongecodeerde spaties, tabs (\t) of enters (\n) middenin de URI
+   # - %[^\d_a-fA-F]{2} zoekt naar ongeldige procent-coderingen (zoals %ZZ)
+   # - #.*# voorkomt misbruik met dubbele fragments
+   url = url.strip()
+   if re.search(r'(\s)|(%[^0-9A-Fa-f]{2})|(#.*#)', url):
+      return False
+
+   import rfc3986
+
+   try:
+      uri = rfc3986.uri_reference(url)
+
+      first_slash = url.find("/")
+      first_colon = url.find(":")
+
+      locator_schemes = ("http", "https", "ftp", "ftps", "sftp", "smb", "webdav", "webdavs", "afs", "nfs", "s3")
+
+      # Locator '//' without scheme (Schemeless Locator)
+      if url.startswith("//"):
+         schemeless_locator_validator = (
+            rfc3986.validators.Validator()
+            .require_presence_of("host")
+            .check_validity_of(*rfc3986.validators.Validator.COMPONENT_NAMES)
+         )
+         schemeless_locator_validator.validate(uri)
+         if uri.scheme:
+            return False
+
+      # Locator containing ':' (Absolute URI)
+      elif first_colon != -1 and (first_slash == -1 or first_colon < first_slash):
+         scheme = url[:first_colon].lower()
+         remainder = url[first_colon + 1:]
+
+         # Network locators (these always start with :// and must have a host)
+         if scheme in locator_schemes:
+            if not remainder.startswith("//"):
+               return False
+            netwerk_validator = (
+               rfc3986.validators.Validator()
+               .require_presence_of("scheme", "host")
+               .check_validity_of(*rfc3986.validators.Validator.COMPONENT_NAMES)
+            )
+            netwerk_validator.validate(uri)
+            return True
+
+         # Local file-locators
+         elif scheme == "file":
+            if not remainder.startswith("/"):
+               return False
+            lokaal_validator = (
+               rfc3986.validators.Validator()
+               .require_presence_of("scheme", "path")
+               .check_validity_of(*rfc3986.validators.Validator.COMPONENT_NAMES)
+            )
+            lokaal_validator.validate(uri)
+            return True
+
+         # Schemes we do not know as locators
+         else:
+            return False
+
+      #  Relative Locator (i.e. metadata/doc.pdf)
+      else:
+         relative_locator_validator = (
+            rfc3986.validators.Validator()
+            .check_validity_of(*rfc3986.validators.Validator.COMPONENT_NAMES)
+         )
+         relative_locator_validator.validate(uri)
+         if uri.scheme or uri.host:
+            return False
+
+      return True
+
+   except rfc3986.exceptions.RFC3986Exception:
+      return False
 
 
 # contains (datefmt, len), in order to ensure precense of zero padded months/days
