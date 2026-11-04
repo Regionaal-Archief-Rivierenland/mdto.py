@@ -487,7 +487,7 @@ class TermijnGegevens(Serializable):
             )
 
         if self.termijnEinddatum and not helpers.valid_mdto_date(self.termijnEinddatum):
-                raise DateValidationError(
+            raise DateValidationError(
                 ["termijnEinddatum"],
                 self.termijnEinddatum,
                 [f for f, _ in helpers.date_fmts],
