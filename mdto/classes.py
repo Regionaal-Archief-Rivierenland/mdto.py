@@ -375,7 +375,7 @@ class VerwijzingGegevens(Serializable):
             code_prefix = "gm",
             name_prefix = "Gemeente",
             url = "https://identifier.overheid.nl/tooi/set/rwc_gemeenten_compleet",
-            register_name= "TOOI register Gemeenten compleet",
+            register_name= "TOOI register gemeenten compleet",
         )
     
     
@@ -404,7 +404,7 @@ class VerwijzingGegevens(Serializable):
             code_prefix = "pv",
             name_prefix = "Provincie",
             url = "https://identifier.overheid.nl/tooi/set/rwc_provincies_compleet",
-            register_name= "TOOI register Provincies compleet",
+            register_name= "TOOI register provincies compleet",
         )
     
     
@@ -433,7 +433,7 @@ class VerwijzingGegevens(Serializable):
             code_prefix = "ws",
             name_prefix = "Waterschap",
             url = "https://identifier.overheid.nl/tooi/set/rwc_waterschappen_compleet",
-            register_name= "TOOI register Waterschappen compleet",
+            register_name= "TOOI register waterschappen compleet",
         )
 
 
