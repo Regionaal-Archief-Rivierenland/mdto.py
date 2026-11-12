@@ -41,7 +41,7 @@ def test_validate_sequence_type_checking(shared_informatieobject):
     ]
     with pytest.raises(
         ValidationError,
-        match=r"\w+(\.\w+)+:\s+list items must be \w+, but found \w+, \w+",
+        match=r"\w+(\.\w+)+:\s+expected type \w+, found \w+",
     ):
         shared_informatieobject.validate()
 
