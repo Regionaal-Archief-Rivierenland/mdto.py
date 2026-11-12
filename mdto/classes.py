@@ -65,7 +65,6 @@ class Serializable:
         for field in dataclasses.fields(self):
             field_name = field.name
             field_value = getattr(self, field_name)
-            field_type = field.type
             optional_field = field.default is None
 
             # optional fields may be None
@@ -79,6 +78,7 @@ class Serializable:
                 else ValidationError([field_name], msg)
             )
 
+            field_type = field.type
             # check if field is listable based on type hint
             if get_origin(field_type) is Union:
                 expected_type = get_args(field_type)[0]
