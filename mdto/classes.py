@@ -93,7 +93,7 @@ class Serializable:
                         f"got type {type(field_value).__name__}, but field does not accept sequences"
                     )
 
-                if not optional_field and len(field_value) == 0:
+                if not optional_field and not field_value:
                     raise _ValidationError(
                         "is empty, but must contain at least one "
                         f"instance of {expected_type.__name__}"
@@ -126,7 +126,7 @@ class Serializable:
                     # empty empty strings are not allowed.
                     # (We're actually a little stricter than MDTO on this point)
                     # None is allowed, but only for optional elements (see above)
-                    if val is None or len(val) == 0:
+                    if val is None or not val:  # FIXME: breaks when booleans are introduced
                         raise _ValidationError("field value must not be empty or None")
 
     def _mdto_ordered_fields(self) -> tuple[Field]:
@@ -224,7 +224,7 @@ class Serializable:
 
             # ensure previously valid MDTO isn't rendered invalid by
             # emptying a required field
-            if len(cleaned) == 0 and not optional_field:
+            if not cleaned and not optional_field:
                 cleaned = field_value[:1]
 
             # TODO: maybe log removals?
