@@ -98,6 +98,11 @@ class Serializable:
                         f"list items must be {expected_type.__name__}, "
                         f"but found {', '.join(set(type(i).__name__ for i in field_value))}"
                     )
+                if not optional_field and len(field_value) == 0:
+                    raise _ValidationError(
+                        "is empty, but must contain at least one "
+                        f"instance of {expected_type.__name__}"
+                    )
             elif not isinstance(field_value, expected_type):
                 raise _ValidationError(
                     f"expected type {expected_type.__name__}, got {type(field_value).__name__}"
@@ -121,7 +126,7 @@ class Serializable:
                 # empty lists, empty strings, etc. are not allowed.
                 # (We're actually a little stricter than MDTO on this point)
                 # None is allowed, but only for optional elements (see above)
-                if field_value is None or len(str(field_value)) == 0:
+                if field_value is None or len(field_value) == 0:
                     raise _ValidationError("field value must not be empty or None")
 
     def _mdto_ordered_fields(self) -> tuple[Field]:

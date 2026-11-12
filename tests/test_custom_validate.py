@@ -20,6 +20,17 @@ def test_validate_recursive(shared_informatieobject):
     ):
         shared_informatieobject.validate()
 
+def test_missing_values_check(shared_informatieobject):
+    """Test validation of missing but required values"""
+    id_copy = shared_informatieobject.identificatie
+    shared_informatieobject.identificatie = []
+    with pytest.raises(ValidationError, match=r".*empty.*IdentificatieGegevens*"):
+        shared_informatieobject.validate()
+
+    shared_informatieobject.identificatie = id_copy
+    shared_informatieobject.naam = ""
+    with pytest.raises(ValidationError, match=r".*value.*empty.*"):
+        shared_informatieobject.validate()
 
 def test_validate_sequence_type_checking(shared_informatieobject):
     """Test validation of sequence type checking."""
