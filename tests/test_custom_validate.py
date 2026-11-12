@@ -16,7 +16,7 @@ def test_validate_recursive(shared_informatieobject):
     )
 
     with pytest.raises(
-        ValidationError, match=r"\w+(\.\w+)+:\s+expected type \w+, got \w+"
+        ValidationError, match=r"\w+(\.\w+)+:\s+expected type \w+, found \w+"
     ):
         shared_informatieobject.validate()
 
@@ -54,6 +54,15 @@ def test_validate_sequence_type_checking(shared_informatieobject):
     ):
         shared_informatieobject.validate()
 
+def test_validate_all_in_sequence(shared_informatieobject):
+    """Test validation on sequence of Serializables"""
+    # correct type, but 2nd object is invalid
+    shared_informatieobject.identificatie = [
+        shared_informatieobject.identificatie,
+        IdentificatieGegevens(None, None),
+    ]
+    with pytest.raises(ValidationError, match=r"\w+(\.\w+)+:\s+expected type \w+, found \w+"):
+        shared_informatieobject.validate()
 
 def test_validate_url(shared_informatieobject):
     """Test URL validation."""
