@@ -1091,9 +1091,10 @@ class Informatieobject(Object, Serializable):
             )
 
         # see https://www.nationaalarchief.nl/archiveren/mdto/bewaartermijn
+        waardering_code = self.waardering.begripCode or ''
         te_vernietigen = (
             self.waardering.begripLabel.lower() == "tijdelijk te bewaren"
-            or self.waardering.begripCode.lower() == "v"
+            or waardering_code.lower() == "v"
         )
         if te_vernietigen and not self.bewaartermijn:
             helpers.logger.warning(
