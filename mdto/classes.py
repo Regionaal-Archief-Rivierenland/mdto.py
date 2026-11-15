@@ -13,6 +13,7 @@ from . import helpers
 
 # globals
 MDTO_MAX_NAAM_LENGTH = 80
+MDTO_NAMESPACE = "https://www.nationaalarchief.nl/mdto"
 
 # needed to inform LSPs about @classmethod return types
 ObjectT = TypeVar("ObjectT", bound="Object")
@@ -141,7 +142,7 @@ class Serializable:
         """
         return dataclasses.fields(self)
 
-    def to_xml(self, root: str) -> ET.Element:
+    def to_xml(self, root: str | None = None) -> ET.Element:
         """Serialize MDTO gegevensgroep to XML tree.
 
         Args:
@@ -150,7 +151,16 @@ class Serializable:
         Returns:
             ET.Element: XML serialization of object with new root tag
         """
-        root_elem = ET.Element(root)
+
+        # fallback: use name of class (i.e. naam van de gegevensgroep)
+        #           when no root element is given.
+        #           Convert from PascalCase to camelCase to conform to
+        #           schema specification
+        if root is None:
+           class_name = self.__class__.__name__
+           root = class_name[0].lower() + class_name[1:]
+
+        root_elem = ET.Element( f"{{{MDTO_NAMESPACE}}}{root}", nsmap={ None: MDTO_NAMESPACE } )
         # get dataclass fields, but in the order required by the MDTO XSD
         fields = self._mdto_ordered_fields()
 
@@ -172,9 +182,77 @@ class Serializable:
                     root_elem.append(val.to_xml(field_name))
                 else:
                     # micro-optim: create subelem and .text content in one go
-                    ET.SubElement(root_elem, field_name).text = str(val)
+                    ET.SubElement(root_elem, f"{{{MDTO_NAMESPACE}}}{field_name}").text = str(val)
 
         return root_elem
+
+    def to_bytes(
+        self,
+        root: str | None = None,
+        minify: bool = False,
+        lxml_kwargs: dict | None = None,
+    ) -> bytes:
+        """Serialize MDTO gegevensgroep to UTF-8 bytes.
+
+        Args:
+            root (str): name of the new root tag
+            minify (Optional[bool]): the reverse of pretty printing; makes the XML
+             as small as possible by removing the XML declaration and any optional
+             whitespace
+            lxml_kwargs (Optional[dict]): optional dict of keyword arguments that
+             can be used to override the args passed to lxml's `tostring()`.
+
+        Returns:
+            bytes: XML UTF-8 bytesarray of object with new root tag
+        """
+
+        # validate before serialization to ensure correctness
+        # (doing this in to_xml would be slow, and perhaps unexpected)
+        self.validate()
+        xml = self.to_xml() if root is None else self.to_xml(root)
+
+        if not minify:
+            # match MDTO voorbeeld bestanden in terms of whitespace
+            ET.indent(xml, space="\t")
+
+        lxml_defaults = {
+            "xml_declaration": not minify,
+            "pretty_print": not minify,
+            "encoding": "UTF-8",
+            "with_tail": False,
+        }
+
+        lxml_user = lxml_kwargs if lxml_kwargs is not None else {}
+
+        return ET.tostring(xml, **(lxml_defaults | lxml_user) )
+
+    def to_string(
+        self,
+        root: str | None = None,
+        minify: bool = False,
+        lxml_kwargs: dict | None = None,
+    ) -> str:
+        """Serialize MDTO gegevensgroep to UTF-8 bytes.
+
+        Args:
+            root (str): name of the new root tag
+            minify (Optional[bool]): the reverse of pretty printing; makes the XML
+             as small as possible by removing the XML declaration and any optional
+             whitespace
+            lxml_kwargs (Optional[dict]): optional dict of keyword arguments that
+             can be used to override the args passed to lxml's `tostring()`.
+             Encoding will be forced to unicode en xml_declaration is disabled.
+
+        Returns:
+            str: XML string of object with new root tag
+        """
+
+        # A string requires unicode encoding and no XML declaration
+        kwargs_dict = lxml_kwargs if lxml_kwargs is not None else {}
+        kwargs_dict["encoding"] = "unicode"
+        kwargs_dict["xml_declaration"] = False
+
+        return self.to_bytes(root, minify, kwargs_dict)
 
     def _is_empty(self) -> bool:
         """Check if all values resolve to empty strings or None."""
@@ -800,12 +878,12 @@ class Object(Serializable):
         # construct attributes of <MDTO>
         xsi_ns = "http://www.w3.org/2001/XMLSchema-instance"
         nsmap = {
-            None: "https://www.nationaalarchief.nl/mdto",  # default namespace (i.e. xmlns=https...)
+            None: MDTO_NAMESPACE,  # default namespace (i.e. xmlns=https...)
             "xsi": xsi_ns,
         }
 
         # create <MDTO>
-        mdto = ET.Element("MDTO", nsmap=nsmap)
+        mdto = ET.Element(f"{{{MDTO_NAMESPACE}}}MDTO", nsmap=nsmap)
 
         # set schemaLocation attribute of <MDTO>
         mdto.set(
